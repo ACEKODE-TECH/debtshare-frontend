@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Placeholder design tokens. Se sustituyen por la paleta, tipografia y radios
+ * reales del design system en la Seccion 2 — de momento solo existen para que
+ * tailwind.config.js tenga algo a lo que apuntar.
+ */
+:root {
+  --color-brand: #111111;
+  --color-surface: #ffffff;
+  --color-ink: #111111;
+  --font-sans: system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+  --radius: 0.375rem;
+}

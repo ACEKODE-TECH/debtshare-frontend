@@ -1,0 +1,73 @@
+name: Discord PR Notifications
+
+on:
+  pull_request:
+    types: [opened, closed, reopened]
+
+jobs:
+  discord-notify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # Required permission to save the ID in the PR description
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- STEP 1: When the PR is OPENED or REOPENED ---
+      - name: Notify PR creation on Discord
+        if: github.event.action == 'opened' || github.event.action == 'reopened'
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Safely construct the JSON payload using jq
+          PAYLOAD=$(jq -n \
+            --arg title "🔀 New PR Opened: #$PR_NUMBER" \
+            --arg desc "**[$PR_TITLE]($PR_URL)**"$'\n'"Author: @$PR_AUTHOR" \
+            '{embeds: [{title: $title, description: $desc, color: 3447003}]}')
+
+          # 2. Send message to Discord using ?wait=true to receive the response ID
+          RESPONSE=$(curl -s -f -X POST "${WEBHOOK_URL}?wait=true" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          # Extract the Discord message ID
+          MSG_ID=$(echo "$RESPONSE" | jq -r '.id')
+
+          if [ "$MSG_ID" != "null" ] && [ -n "$MSG_ID" ]; then
+            # 3. Save the ID at the bottom of the PR description as a hidden tag
+            # Use a temporary file to handle multiline bodies safely
+            gh pr view $PR_NUMBER --repo ${{ github.repository }} --json body -q .body > pr_body.txt
+            echo -e "\n<!-- discord_msg_id:${MSG_ID} -->" >> pr_body.txt
+            gh pr edit $PR_NUMBER --repo ${{ github.repository }} --body-file pr_body.txt
+          fi
+
+      # --- STEP 2: When the PR is CLOSED (Merged or Cancelled) ---
+      - name: Delete Discord message on close
+        if: github.event.action == 'closed'
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Fetch the LATEST body to ensure we have the hidden tag
+          PR_BODY=$(gh pr view $PR_NUMBER --repo ${{ github.repository }} --json body -q .body)
+
+          # 2. Extract the message ID from the hidden comment
+          # Using sed to capture the numeric ID inside the hidden tag
+          MSG_ID=$(echo "$PR_BODY" | sed -n 's/.*<!-- discord_msg_id:\([0-9]*\) -->.*/\1/p' | tail -n 1)
+
+          echo "Detected Discord Message ID: '$MSG_ID'"
+
+          if [ -n "$MSG_ID" ] && [ "$MSG_ID" != "null" ]; then
+            # Delete the specific message via the Discord Webhook API
+            curl -s -f -X DELETE "${WEBHOOK_URL}/messages/${MSG_ID}"
+          else
+            echo "No Discord message ID found in PR body. Skipping deletion."
+          fi

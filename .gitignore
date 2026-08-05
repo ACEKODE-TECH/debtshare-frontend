@@ -26,6 +26,13 @@ desktop.ini
 CLAUDE.md
 .claude/
 
+# Playwright
+e2e/results
+e2e/report
+/test-results/
+/playwright-report/
+/blob-report/
+
 # logs
 *.log
 npm-debug.log*

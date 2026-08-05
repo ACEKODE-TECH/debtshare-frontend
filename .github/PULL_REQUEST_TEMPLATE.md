@@ -1,11 +1,26 @@
-## This pull request is a:
+## Descripcion
 
-<code> </code> Feature :bookmark:
-<code>x</code> Task :heavy_check_mark:
-<code> </code> Refactor :bulb:
-<code> </code> Bug :bug:
-<code> </code> Spike :bulb:
+<!-- Qué cambia este PR y por qué -->
 
-## Description:
+## Seccion del proyecto
 
->
+<!-- A qué sección del roadmap corresponde (ej. "Sección 2 — Design system") -->
+
+## Tipo de cambio
+
+- [ ] Feature nueva
+- [ ] Bug fix
+- [ ] Refactor / mejora interna
+- [ ] CI / tooling
+- [ ] Documentación
+
+## Checklist
+
+- [ ] El pipeline de CI pasa (lint, format, typecheck, tests, build)
+- [ ] He añadido/actualizado tests para los cambios
+- [ ] He probado los cambios localmente
+- [ ] Si hay cambios visuales: capturas o GIF adjuntos abajo
+
+## Capturas (si aplica)
+
+<!-- Arrastra imágenes aquí o pega un GIF -->

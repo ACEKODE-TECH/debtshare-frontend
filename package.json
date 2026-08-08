@@ -72,7 +72,7 @@
     "prettier": "^3",
     "size-limit": "^13.0.3",
     "tailwindcss": "^3",
-    "typescript": "^5",
+    "typescript": "^7",
     "typescript-eslint": "^8",
     "vite": "^6",
     "vitest": "^4"

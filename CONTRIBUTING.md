@@ -97,22 +97,35 @@ Es decir: tu decides cuando cerrar una version mergeando la PR de release.
 
 ## Configuracion manual en GitHub
 
-Estas dos cosas no se pueden configurar por codigo y las activa el owner del repo.
+Esto no se puede configurar por codigo y lo gestiona el owner del repo.
 
-### 1. Permitir que Actions abra PRs
+### Permitir que Actions abra PRs
 
-**Settings > Actions > General > Workflow permissions**:
+**Settings > Actions > General > Workflow permissions** →
+**Allow GitHub Actions to create and approve pull requests**.
 
-- Marcar **Allow GitHub Actions to create and approve pull requests**
+Ya esta activado. Sin ello el workflow de release no puede abrir la PR de
+"Version Packages".
 
-Sin esto, el workflow de release **no puede abrir la PR de "Version Packages"**
-y falla con un error de permisos.
+Nota: `default_workflow_permissions` esta en `read`, que es lo correcto y seguro.
+Los workflows que necesitan escribir (`release`, `labeler`, `codeql`, `size-limit`)
+declaran su propio bloque `permissions:`, que tiene prioridad sobre ese default.
 
-### 2. Proteccion de rama
+### Proteccion de `main` (rulesets)
 
-En **Settings > Branches > Add rule** para `main`:
+La proteccion esta implementada con **rulesets** (Settings > Rules > Rulesets),
+no con la proteccion de ramas clasica.
 
-- **Require status checks to pass before merging**: seleccionar los checks `quality` (CI), `e2e` (Playwright), y `check` (Semantic PR)
-- **Require branches to be up to date before merging**
-- **Do not allow bypassing the above settings**
-- **Block direct pushes to main** (solo merge via PR)
+Reglas activas hoy sobre `main`: bloqueo de borrado, bloqueo de force-push,
+historial lineal obligatorio, y PR obligatoria.
+
+Dos ajustes pendientes en el ruleset `main`:
+
+- **Required approvals: 2 → 0.** En un repo de un solo desarrollador nadie puede
+  aprobar la PR (no puedes aprobar la tuya), asi que con 2 aprobaciones **no se
+  puede mergear nada**, incluida la PR de release. Con `bypass_actors` vacio, ni
+  siquiera un admin puede saltarselo.
+- **Falta "Require status checks to pass"**: añadir `quality` (CI), `e2e` y
+  `check` (Semantic PR). Ahora mismo se puede mergear con CI en rojo.
+
+Al exigir historial lineal, mergea con **squash** o **rebase**, nunca merge commit.

@@ -40,6 +40,41 @@ jobs:
           commit: "chore(release): version packages"
           version: npx changeset version
           publish: npx changeset tag
-          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # changesets/action only builds its released-packages list by parsing
+      # `name@version` lines from the publish output. A single-package repo tags
+      # as `vX.Y.Z`, which never matches, so the tag is pushed but no Release is
+      # created. This step closes that gap.
+      - name: Publish GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v$VERSION"
+
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "No $TAG tag present; this run only updated the release PR."
+            exit 0
+          fi
+
+          # Only release when the tag was cut for this very commit. Otherwise a
+          # later push to main would re-release the previous version.
+          if [ "$(git rev-parse "$TAG^{commit}")" != "$(git rev-parse HEAD)" ]; then
+            echo "$TAG points at an earlier commit; nothing new to release."
+            exit 0
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists."
+            exit 0
+          fi
+
+          NOTES=$(awk -v h="## $VERSION" '$0==h{f=1;next} /^## /{if(f)exit} f' CHANGELOG.md 2>/dev/null || true)
+
+          if [ -n "$NOTES" ]; then
+            printf '%s\n' "$NOTES" | gh release create "$TAG" --title "$TAG" --notes-file -
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi

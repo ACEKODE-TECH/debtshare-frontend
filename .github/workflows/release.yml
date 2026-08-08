@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.ref }}
+
+jobs:
+  release:
+    name: Version & changelog
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Changesets needs full history and tags to know what was already released.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # While changesets are pending, this keeps a "Version Packages" PR open and
+      # up to date. Once that PR is merged there are no changesets left, so the
+      # action runs `publish` instead: it creates the vX.Y.Z tag, pushes it, and
+      # opens the GitHub Release using the generated CHANGELOG entry.
+      - name: Create release PR or tag release
+        uses: changesets/action@v1
+        with:
+          title: "chore(release): version packages"
+          commit: "chore(release): version packages"
+          version: npx changeset version
+          publish: npx changeset tag
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,46 @@
+ci:
+  - changed-files:
+      - any-glob-to-any-file: .github/**
+
+auth:
+  - changed-files:
+      - any-glob-to-any-file: src/features/auth/**
+
+groups:
+  - changed-files:
+      - any-glob-to-any-file: src/features/groups/**
+
+expenses:
+  - changed-files:
+      - any-glob-to-any-file: src/features/expenses/**
+
+receipts:
+  - changed-files:
+      - any-glob-to-any-file: src/features/receipts/**
+
+dashboard:
+  - changed-files:
+      - any-glob-to-any-file: src/features/dashboard/**
+
+shared:
+  - changed-files:
+      - any-glob-to-any-file: src/shared/**
+
+mocks:
+  - changed-files:
+      - any-glob-to-any-file: src/mocks/**
+
+types:
+  - changed-files:
+      - any-glob-to-any-file: src/types/**
+
+e2e:
+  - changed-files:
+      - any-glob-to-any-file: e2e/**
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "*.config.*"
+          - tsconfig*.json
+          - package.json

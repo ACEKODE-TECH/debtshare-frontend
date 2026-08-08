@@ -1,0 +1,34 @@
+name: Size Limit
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: size-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  size:
+    name: Bundle size check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Runs size-limit from the local devDependencies. The andresz1 action was
+      # dropped here: it resolves its own bare `size-limit` via npx, which comes
+      # without the `@size-limit/file` plugin this project configures, so it
+      # failed with "Install Size Limit preset depends on type of the project".
+      - name: Check bundle size
+        run: npm run size

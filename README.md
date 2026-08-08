@@ -1,5 +1,9 @@
 # Debtshare — Frontend
 
+[![CI](https://github.com/ACEKODE-TECH/debtshare-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/ACEKODE-TECH/debtshare-frontend/actions/workflows/ci.yml)
+[![E2E](https://github.com/ACEKODE-TECH/debtshare-frontend/actions/workflows/e2e.yml/badge.svg)](https://github.com/ACEKODE-TECH/debtshare-frontend/actions/workflows/e2e.yml)
+[![CodeQL](https://github.com/ACEKODE-TECH/debtshare-frontend/actions/workflows/codeql.yml/badge.svg)](https://github.com/ACEKODE-TECH/debtshare-frontend/actions/workflows/codeql.yml)
+
 Frontend de **Debtshare**, una app que combina la gestión de gastos
 compartidos estilo Tricount (grupos, splits, balances) con el escaneo de
 tickets/facturas estilo Factorial, y un dashboard de analíticas.

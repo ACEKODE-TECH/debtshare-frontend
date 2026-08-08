@@ -8,7 +8,22 @@ updates:
       prefix: "chore(deps)"
     labels:
       - dependencies
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    # One PR a week for everything safe, instead of one per dependency.
+    groups:
+      npm:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    # Majors here are migrations, not bumps: Tailwind 4, Vite 8 and React
+    # Router 8 all need deliberate work, and jsdom 30 broke this setup before.
+    # They are raised by hand when we choose to migrate.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
@@ -19,3 +34,10 @@ updates:
     labels:
       - ci
       - dependencies
+    open-pull-requests-limit: 5
+    # Action majors are usually a one-line bump, so they stay in scope, but
+    # they arrive grouped in a single PR rather than one per action.
+    groups:
+      github-actions:
+        patterns:
+          - "*"

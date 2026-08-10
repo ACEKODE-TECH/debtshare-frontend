@@ -2,7 +2,7 @@
   "_meta": {
     "source": "Debtshare design tokens delivered by Claude Design, saved verbatim as the source of truth.",
     "modifications": [
-      "shadow.md and shadow.lg replaced with neutral, low-opacity slate-900 variants (see docs/design-system-components.md button spec). Every other value is untouched."
+      "shadow.md, shadow.lg and shadow.lgAlt replaced with neutral, low-opacity slate-900 variants so the primary button's default/hover/pressed states stay chromatically consistent (see docs/design-system-components.md button spec). Every other value is untouched."
     ],
     "outputs": [
       "radius.device.* and shadow.device.* are excluded from the generated CSS and Tailwind theme: they belong to the presentation frame of the Claude Design mockup, not to the Debtshare product."
@@ -237,7 +237,7 @@
     "smAlt": "0 1px 3px rgba(0,0,0,0.08)",
     "md": "0 4px 12px rgba(15,23,42,0.15)",
     "lg": "0 6px 16px rgba(15,23,42,0.18)",
-    "lgAlt": "0 6px 20px rgba(91,138,246,0.4)",
+    "lgAlt": "0 6px 20px rgba(15,23,42,0.20)",
     "device": {
       "light": "0 22px 60px rgba(0,0,0,0.13)",
       "lightLayered": "0 22px 60px rgba(0,0,0,0.13), 0 6px 14px rgba(0,0,0,0.06)",

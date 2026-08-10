@@ -139,6 +139,6 @@ export default {
     "sm-alt": "0 1px 3px rgba(0,0,0,0.08)",
     "md": "0 4px 12px rgba(15,23,42,0.15)",
     "lg": "0 6px 16px rgba(15,23,42,0.18)",
-    "lg-alt": "0 6px 20px rgba(91,138,246,0.4)"
+    "lg-alt": "0 6px 20px rgba(15,23,42,0.20)"
   }
 };

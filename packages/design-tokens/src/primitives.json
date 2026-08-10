@@ -1,0 +1,248 @@
+{
+  "_meta": {
+    "source": "Debtshare design tokens delivered by Claude Design, saved verbatim as the source of truth.",
+    "modifications": [
+      "shadow.md, shadow.lg and shadow.lgAlt replaced with neutral, low-opacity slate-900 variants so the primary button's default/hover/pressed states stay chromatically consistent (see docs/design-system-components.md button spec). Every other value is untouched."
+    ],
+    "outputs": [
+      "radius.device.* and shadow.device.* are excluded from the generated CSS and Tailwind theme: they belong to the presentation frame of the Claude Design mockup, not to the Debtshare product."
+    ]
+  },
+  "color": {
+    "brand": {
+      "primary": "#3b6ef6",
+      "primaryHover": "#2563eb",
+      "primaryLight": "#5b8af6",
+      "primaryLighter": "#7aa5ff",
+      "primaryTint": "#eff6ff",
+      "primaryTintAlt": "#dbeafe",
+      "primaryTintDark": "#1e3a8a",
+      "primaryTintDarker": "#1e40af",
+      "primaryDarkSurface": "#eff3fe",
+      "secondary": "#4f46e5",
+      "secondaryTint": "#e0e7ff",
+      "secondaryTintAlt": "#c7d2fe"
+    },
+    "accent": {
+      "mustard": "#fbbf24",
+      "mustardDark": "#d97706",
+      "mustardDarker": "#92400e",
+      "mustardTint": "#fef3c7",
+      "mustardTintSoft": "#fde68a",
+      "mustardTintDark": "#fffbeb",
+      "plum": "#be185d",
+      "plumLight": "#f472b6",
+      "plumBright": "#ec4899",
+      "plumTint": "#fce7f3",
+      "violet": "#7c3aed",
+      "violetLight": "#a78bfa"
+    },
+    "neutral": {
+      "0": "#ffffff",
+      "50": "#fafbfc",
+      "75": "#f9fafb",
+      "100": "#f5f6fa",
+      "125": "#f3f4f6",
+      "150": "#f2f4f8",
+      "175": "#eceef3",
+      "200": "#eef0f4",
+      "225": "#eaeef7",
+      "250": "#eaecf0",
+      "275": "#e6e8ec",
+      "300": "#e5e7eb",
+      "325": "#e4e7ee",
+      "350": "#dcdfe6",
+      "375": "#dfe3ec",
+      "400": "#d8dbe4",
+      "425": "#d1d5db",
+      "450": "#cbd0da",
+      "475": "#c8cad0",
+      "500": "#c4c9d3",
+      "525": "#a8b1c2",
+      "550": "#9ca3af",
+      "575": "#9aa4b8",
+      "600": "#8b95a8",
+      "625": "#7a8494",
+      "650": "#6b7280",
+      "700": "#4b5563",
+      "725": "#3a4050",
+      "750": "#374151",
+      "775": "#282d3a",
+      "800": "#1f2937",
+      "825": "#1e2230",
+      "850": "#1a1e2a",
+      "875": "#141822",
+      "900": "#12151e",
+      "925": "#0e1119",
+      "950": "#0c0e14",
+      "975": "#0b0d13",
+      "1000": "#050710"
+    },
+    "semantic": {
+      "success": "#059669",
+      "successBright": "#10b981",
+      "successMid": "#16a34a",
+      "successLight": "#22c55e",
+      "successVivid": "#34d399",
+      "successTint": "#d1fae5",
+      "successTintSoft": "#f0fdf4",
+      "successTintAlt": "#dcfce7",
+      "successTintBright": "#bbf7d0",
+      "successDark": "#065f46",
+      "warning": "#d97706",
+      "warningBright": "#fbbf24",
+      "warningTint": "#fef3c7",
+      "warningTintSoft": "#fffbeb",
+      "warningDark": "#92400e",
+      "error": "#dc2626",
+      "errorBright": "#ef4444",
+      "errorLight": "#f87171",
+      "errorTint": "#fee2e2",
+      "errorTintSoft": "#fef2f2",
+      "errorTintAlt": "#fecaca"
+    },
+    "brandExternal": {
+      "google": {
+        "blue": "#4285f4",
+        "red": "#ea4335",
+        "yellow": "#fbbc05",
+        "green": "#34a853"
+      },
+      "whatsapp": "#25d366"
+    },
+    "surface": {
+      "light": {
+        "canvas": "#eceef3",
+        "bg": "#f5f6fa",
+        "card": "#ffffff",
+        "subtle": "#fafbfc",
+        "border": "#eef0f4",
+        "borderStrong": "#e5e7eb",
+        "divider": "#f3f4f6"
+      },
+      "dark": {
+        "canvas": "#0c0e14",
+        "bg": "#12151e",
+        "card": "#1a1e2a",
+        "cardAlt": "#1e2230",
+        "elevated": "#282d3a",
+        "border": "#282d3a",
+        "divider": "#1e2230"
+      }
+    },
+    "text": {
+      "light": {
+        "primary": "#111827",
+        "secondary": "#374151",
+        "tertiary": "#6b7280",
+        "muted": "#9ca3af",
+        "onBrand": "#ffffff"
+      },
+      "dark": {
+        "primary": "#f2f4f8",
+        "secondary": "#c4c9d3",
+        "tertiary": "#a8b1c2",
+        "muted": "#7a8494",
+        "subtle": "#9aa4b8"
+      }
+    }
+  },
+  "typography": {
+    "display": {
+      "family": "'Plus Jakarta Sans', system-ui, sans-serif",
+      "weights": [400, 500, 600, 700, 800],
+      "sizes": {
+        "xs": 20,
+        "sm": 22,
+        "md": 30,
+        "lg": 42
+      },
+      "letterSpacing": {
+        "xs": "-0.3px",
+        "sm": "-0.5px",
+        "md": "-1px"
+      }
+    },
+    "body": {
+      "family": "'Plus Jakarta Sans', system-ui, sans-serif",
+      "weights": [400, 500, 600, 700, 800],
+      "sizes": {
+        "2xs": 10,
+        "xs": 10.5,
+        "sm": 11,
+        "smPlus": 11.5,
+        "md": 12,
+        "mdPlus": 12.5,
+        "base": 13,
+        "lg": 14,
+        "xl": 15,
+        "xlPlus": 15.5,
+        "2xl": 17,
+        "3xl": 19
+      },
+      "lineHeight": {
+        "tight": 1.2,
+        "snug": 1.3,
+        "normal": 1.5
+      }
+    },
+    "mono": {
+      "family": "ui-monospace, Menlo, monospace",
+      "weights": [400, 600],
+      "sizes": { "xs": 10, "sm": 10.5, "md": 12 }
+    },
+    "labelUppercase": {
+      "size": 10.5,
+      "weight": 700,
+      "letterSpacing": "0.4px",
+      "textTransform": "uppercase"
+    }
+  },
+  "spacing": {
+    "2xs": 4,
+    "xs": 6,
+    "sm": 8,
+    "smPlus": 10,
+    "md": 12,
+    "mdPlus": 14,
+    "lg": 16,
+    "lgPlus": 18,
+    "xl": 20,
+    "xlPlus": 22,
+    "2xl": 24,
+    "3xl": 32,
+    "4xl": 44
+  },
+  "radius": {
+    "xs": 3,
+    "sm": 6,
+    "smPlus": 8,
+    "md": 10,
+    "mdPlus": 11,
+    "lg": 12,
+    "lgPlus": 14,
+    "xl": 16,
+    "xlPlus": 18,
+    "2xl": 20,
+    "3xl": 22,
+    "device": {
+      "inner": 36,
+      "outer": 44
+    },
+    "pill": 9999
+  },
+  "shadow": {
+    "xs": "0 1px 3px rgba(0,0,0,0.04)",
+    "sm": "0 1px 4px rgba(0,0,0,0.04)",
+    "smAlt": "0 1px 3px rgba(0,0,0,0.08)",
+    "md": "0 4px 12px rgba(15,23,42,0.15)",
+    "lg": "0 6px 16px rgba(15,23,42,0.18)",
+    "lgAlt": "0 6px 20px rgba(15,23,42,0.20)",
+    "device": {
+      "light": "0 22px 60px rgba(0,0,0,0.13)",
+      "lightLayered": "0 22px 60px rgba(0,0,0,0.13), 0 6px 14px rgba(0,0,0,0.06)",
+      "dark": "0 22px 60px rgba(0,0,0,0.5)",
+      "darkLayered": "0 22px 60px rgba(0,0,0,0.5), 0 6px 14px rgba(0,0,0,0.3)"
+    }
+  }
+}

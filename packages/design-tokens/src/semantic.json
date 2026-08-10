@@ -1,0 +1,93 @@
+{
+  "_meta": {
+    "role": "Semantic layer authored on top of primitives.json. Components consume ONLY these tokens; primitives are internal building blocks.",
+    "shape": {
+      "themeDependent": "{ light: <primitive path>, dark: <primitive path> } — emitted twice in CSS, once in :root and once in [data-theme=dark]",
+      "crossTheme": "\"<primitive path>\" — single CSS variable in :root"
+    },
+    "reference": "docs/design-system-components.md is the contract these tokens serve."
+  },
+  "color": {
+    "text": {
+      "primary": { "light": "color.text.light.primary", "dark": "color.text.dark.primary" },
+      "secondary": { "light": "color.text.light.secondary", "dark": "color.text.dark.secondary" },
+      "tertiary": { "light": "color.text.light.tertiary", "dark": "color.text.dark.tertiary" },
+      "muted": { "light": "color.text.light.muted", "dark": "color.text.dark.muted" },
+      "subtle": { "light": "color.text.light.muted", "dark": "color.text.dark.subtle" },
+      "onBrand": "color.text.light.onBrand"
+    },
+    "surface": {
+      "canvas": { "light": "color.surface.light.canvas", "dark": "color.surface.dark.canvas" },
+      "bg": { "light": "color.surface.light.bg", "dark": "color.surface.dark.bg" },
+      "card": { "light": "color.surface.light.card", "dark": "color.surface.dark.card" },
+      "cardAlt": { "light": "color.surface.light.card", "dark": "color.surface.dark.cardAlt" },
+      "subtle": { "light": "color.surface.light.subtle", "dark": "color.surface.dark.card" },
+      "elevated": { "light": "color.surface.light.card", "dark": "color.surface.dark.elevated" },
+      "hover": { "light": "color.neutral.125", "dark": "color.neutral.825" },
+      "pressed": { "light": "color.neutral.150", "dark": "color.neutral.850" },
+      "disabled": { "light": "color.neutral.125", "dark": "color.neutral.850" },
+      "readonly": { "light": "color.neutral.75", "dark": "color.neutral.875" }
+    },
+    "border": {
+      "default": { "light": "color.neutral.200", "dark": "color.neutral.825" },
+      "strong": { "light": "color.neutral.300", "dark": "color.neutral.775" },
+      "stronger": { "light": "color.neutral.425", "dark": "color.neutral.700" },
+      "divider": { "light": "color.surface.light.divider", "dark": "color.surface.dark.divider" },
+      "readonly": { "light": "color.neutral.250", "dark": "color.neutral.775" }
+    },
+    "brand": {
+      "default": "color.brand.primary",
+      "hover": "color.brand.primaryHover",
+      "pressed": "color.brand.primaryHover",
+      "subtle": "color.brand.primaryTint",
+      "subtleStrong": "color.brand.primaryTintAlt",
+      "ring": "color.brand.primaryLight",
+      "onBrand": "color.text.light.onBrand",
+      "secondary": "color.brand.secondary",
+      "secondarySubtle": "color.brand.secondaryTint"
+    },
+    "feedback": {
+      "success": "color.semantic.success",
+      "successSubtle": "color.semantic.successTintSoft",
+      "successSubtleStrong": "color.semantic.successTint",
+      "warning": "color.semantic.warning",
+      "warningStrong": "color.accent.mustardDark",
+      "warningSubtle": "color.semantic.warningTintSoft",
+      "warningSubtleStrong": "color.accent.mustardTint",
+      "danger": "color.semantic.error",
+      "dangerHover": "color.semantic.errorBright",
+      "dangerRing": "color.semantic.errorLight",
+      "dangerSubtle": "color.semantic.errorTintSoft",
+      "dangerSubtleStrong": "color.semantic.errorTint"
+    },
+    "accent": {
+      "mustard": "color.accent.mustard",
+      "mustardStrong": "color.accent.mustardDark",
+      "mustardSubtle": "color.accent.mustardTint",
+      "plum": "color.accent.plum",
+      "plumSubtle": "color.accent.plumTint",
+      "violet": "color.accent.violet"
+    },
+    "category": {
+      "foodBg": "color.accent.mustardTint",
+      "foodFg": "color.accent.mustardDark",
+      "transportBg": "color.brand.primaryTint",
+      "transportFg": "color.brand.primary",
+      "lodgingBg": "color.accent.plumTint",
+      "lodgingFg": "color.accent.plum",
+      "leisureBg": "color.neutral.250",
+      "leisureFg": "color.neutral.700",
+      "shoppingBg": "color.semantic.successTintSoft",
+      "shoppingFg": "color.semantic.success",
+      "otherBg": "color.neutral.150",
+      "otherFg": "color.neutral.650"
+    }
+  },
+  "font": {
+    "family": {
+      "display": "typography.display.family",
+      "body": "typography.body.family",
+      "mono": "typography.mono.family"
+    }
+  }
+}

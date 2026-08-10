@@ -1,23 +1,22 @@
+import tokens from "./packages/design-tokens/build/web/tailwind.tokens.js";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  // Dark theme is triggered by [data-theme="dark"] on an ancestor. See
+  // packages/design-tokens/build/web/tokens.css for the semantic overrides.
+  darkMode: ["class", '[data-theme="dark"]'],
   theme: {
-    extend: {
-      // Placeholder token slots — se rellenan con el design system real en la Seccion 2.
-      // Todos leen de custom properties (src/index.css) para poder theming sin tocar este archivo.
-      colors: {
-        brand: "var(--color-brand)",
-        surface: "var(--color-surface)",
-        ink: "var(--color-ink)",
-      },
-      fontFamily: {
-        sans: "var(--font-sans)",
-        serif: "var(--font-serif)",
-      },
-      borderRadius: {
-        DEFAULT: "var(--radius)",
-      },
-    },
+    // Replace, not extend: the theme comes wholesale from the design-tokens
+    // package so tailwind.config.js has nothing to say about visual values.
+    // Every colour/size/radius/shadow lives in packages/design-tokens/src/.
+    colors: tokens.colors,
+    fontFamily: tokens.fontFamily,
+    fontSize: tokens.fontSize,
+    spacing: tokens.spacing,
+    borderRadius: tokens.borderRadius,
+    boxShadow: tokens.boxShadow,
+    extend: {},
   },
   plugins: [],
 };

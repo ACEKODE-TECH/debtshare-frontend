@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 
 import { RootLayout } from "@/app/layout/RootLayout";
+import { AvatarShowcase } from "@/features/design-system/pages/AvatarShowcase";
 import { ButtonShowcase } from "@/features/design-system/pages/ButtonShowcase";
 
 // Placeholder index route so the shell has something to render before any
@@ -12,6 +13,7 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <p>Debtshare — esqueleto del proyecto listo, sin UI todavia.</p> },
+      { path: "design-system/avatar", element: <AvatarShowcase /> },
       { path: "design-system/button", element: <ButtonShowcase /> },
     ],
   },

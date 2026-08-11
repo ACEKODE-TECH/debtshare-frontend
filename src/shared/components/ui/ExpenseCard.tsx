@@ -163,7 +163,7 @@ function ExpenseCardImpl(
         {icon}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2xs">
+      <div className="flex min-w-0 flex-1 flex-col gap-2xs overflow-hidden">
         <p
           className={cn(
             "truncate font-sans text-2xl font-extrabold tracking-[-0.3px]",
@@ -182,7 +182,7 @@ function ExpenseCardImpl(
         </p>
       </div>
 
-      <div className="flex flex-none flex-col items-end gap-2xs">
+      <div className="flex shrink-0 flex-col items-end gap-2xs whitespace-nowrap">
         <span
           className={cn(
             "font-sans text-xl font-extrabold tracking-[-0.3px]",

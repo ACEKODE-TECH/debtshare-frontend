@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 export const cardStyles = cva(
   [
-    "flex items-center gap-md-plus w-full rounded-xl-plus border",
+    "flex items-center gap-md-plus w-full overflow-hidden rounded-xl-plus border",
     "px-lg-plus py-lg min-h-[76px]",
     "transition-[background-color,border-color,box-shadow] duration-150 ease-out",
     "motion-reduce:transition-none",

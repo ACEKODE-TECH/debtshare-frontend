@@ -122,12 +122,15 @@ const primitiveLines = usablePrimitives.map(([path, value]) =>
   line(toVar(path), serializePrimitive(path, value)),
 );
 
+const isSelfRef = (varName, value) => value === `var(${varName})`;
+
 const semanticLightLines = semanticTokens
-  .filter((t) => toVar(t.path) !== t.light.slice(4, -1))
+  .filter((t) => !isSelfRef(toVar(t.path), t.light))
   .map((t) => line(toVar(t.path), t.light));
+
 const semanticDarkLines = semanticTokens
   .filter((t) => t.dark)
-  .filter((t) => toVar(t.path) !== t.dark.slice(4, -1))
+  .filter((t) => !isSelfRef(toVar(t.path), t.dark))
   .map((t) => line(toVar(t.path), t.dark));
 
 const css = [

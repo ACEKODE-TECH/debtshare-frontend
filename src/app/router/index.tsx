@@ -4,6 +4,8 @@ import { RootLayout } from "@/app/layout/RootLayout";
 import { AvatarShowcase } from "@/features/design-system/pages/AvatarShowcase";
 import { ButtonShowcase } from "@/features/design-system/pages/ButtonShowcase";
 import { DesignSystemIndex } from "@/features/design-system/pages/DesignSystemIndex";
+import { ExpenseCardShowcase } from "@/features/design-system/pages/ExpenseCardShowcase";
+import { InputShowcase } from "@/features/design-system/pages/InputShowcase";
 
 // Placeholder index route so the shell has something to render before any
 // feature exists. Replaced by the real dashboard/groups routes as each
@@ -17,6 +19,8 @@ export const router = createBrowserRouter([
       { path: "design-system", element: <DesignSystemIndex /> },
       { path: "design-system/avatar", element: <AvatarShowcase /> },
       { path: "design-system/button", element: <ButtonShowcase /> },
+      { path: "design-system/expense-card", element: <ExpenseCardShowcase /> },
+      { path: "design-system/input", element: <InputShowcase /> },
     ],
   },
 ]);

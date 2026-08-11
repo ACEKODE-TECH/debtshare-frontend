@@ -10,7 +10,12 @@ export default {
     // Replace, not extend: the theme comes wholesale from the design-tokens
     // package so tailwind.config.js has nothing to say about visual values.
     // Every colour/size/radius/shadow lives in packages/design-tokens/src/.
-    colors: tokens.colors,
+    colors: {
+      transparent: "transparent",
+      current: "currentColor",
+      inherit: "inherit",
+      ...tokens.colors,
+    },
     fontFamily: tokens.fontFamily,
     fontSize: tokens.fontSize,
     spacing: tokens.spacing,

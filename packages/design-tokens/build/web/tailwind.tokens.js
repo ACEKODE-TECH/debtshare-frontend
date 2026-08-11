@@ -38,6 +38,8 @@ export default {
       "subtle-strong": "var(--color-brand-subtle-strong)",
       "ring": "var(--color-brand-ring)",
       "on-brand": "var(--color-brand-on-brand)",
+      "disabled-bg": "var(--color-brand-disabled-bg)",
+      "disabled-text": "var(--color-brand-disabled-text)",
       "secondary": "var(--color-brand-secondary)",
       "secondary-subtle": "var(--color-brand-secondary-subtle)"
     },

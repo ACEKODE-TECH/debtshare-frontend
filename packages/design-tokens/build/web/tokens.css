@@ -208,6 +208,8 @@
   --color-brand-subtle-strong: var(--color-brand-primary-tint-alt);
   --color-brand-ring: var(--color-brand-primary-light);
   --color-brand-on-brand: var(--color-text-light-on-brand);
+  --color-brand-disabled-bg: var(--color-neutral-300);
+  --color-brand-disabled-text: var(--color-neutral-550);
   --color-brand-secondary: var(--color-brand-secondary);
   --color-brand-secondary-subtle: var(--color-brand-secondary-tint);
   --color-feedback-success: var(--color-semantic-success);
@@ -267,4 +269,5 @@
   --color-border-stronger: var(--color-neutral-700);
   --color-border-divider: var(--color-surface-dark-divider);
   --color-border-readonly: var(--color-neutral-775);
+  --color-brand-disabled-bg: var(--color-neutral-775);
 }

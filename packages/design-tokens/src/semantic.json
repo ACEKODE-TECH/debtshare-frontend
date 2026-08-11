@@ -43,6 +43,8 @@
       "subtleStrong": "color.brand.primaryTintAlt",
       "ring": "color.brand.primaryLight",
       "onBrand": "color.text.light.onBrand",
+      "disabledBg": { "light": "color.neutral.300", "dark": "color.neutral.775" },
+      "disabledText": "color.neutral.550",
       "secondary": "color.brand.secondary",
       "secondarySubtle": "color.brand.secondaryTint"
     },

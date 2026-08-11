@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 export const fieldWrapperStyles = cva(
   [
-    "flex items-center w-full rounded-lg border",
+    "flex items-center w-full rounded-lg border overflow-hidden",
     "bg-surface-card-alt",
     "transition-[border-color,box-shadow] duration-150 ease-out",
     "motion-reduce:transition-none",

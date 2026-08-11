@@ -201,12 +201,12 @@ function InputImpl(props: InputProps, ref: ForwardedRef<HTMLInputElement | HTMLT
     fieldContent = (
       <>
         {isSearch && (
-          <span className="flex-none pl-md-plus text-text-muted">
+          <span className="flex-none pl-md-plus pr-sm text-text-muted">
             <SearchIcon />
           </span>
         )}
         {currencySymbol && (
-          <span className="flex-none pl-md-plus font-sans text-lg font-medium text-text-primary">
+          <span className="flex-none pl-md-plus pr-sm font-sans text-lg font-medium text-text-primary">
             {currencySymbol}
           </span>
         )}

@@ -3,3 +3,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /*
+   * Tailwind's preflight sets `--tw-ring-offset-color: #fff` on every element.
+   * Override it so a focus ring's offset always blends with the current
+   * surface — and follows the theme when the user flips it.
+   */
+  *,
+  ::before,
+  ::after {
+    --tw-ring-offset-color: var(--color-surface-bg);
+  }
+
+  html {
+    background-color: var(--color-surface-bg);
+    color: var(--color-text-primary);
+  }
+}

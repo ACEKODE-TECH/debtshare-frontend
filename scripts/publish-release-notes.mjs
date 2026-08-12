@@ -7,9 +7,12 @@
 //      as a table by querying Jira directly — the page always shows current
 //      status/assignee, we never snapshot stale data.
 //
-// Page hierarchy in Confluence: <CONFLUENCE_PROJECT_PAGE> (must exist) >
-// "📓Release Notes" (created once, never overwritten) > "Release vX.Y.Z"
-// (created or updated every run — safe to re-run against the same tag).
+// Page hierarchy in Confluence: "📓 Release Notes" (a single page shared
+// across every project in the space — must already exist, we never create
+// it) > "<CONFLUENCE_PROJECT_PAGE> Release vX.Y.Z" (created or updated
+// every run — safe to re-run against the same tag). The version title is
+// qualified with the project name because Confluence enforces page-title
+// uniqueness across the whole space, not just among siblings.
 //
 // Trade-off accepted deliberately: because the ticket table is a live JQL
 // embed, we can't detect at publish time whether a referenced ticket key
@@ -141,20 +144,6 @@ async function updateConfluencePage(confluenceUrl, pageId, { title, bodyHtml }, 
     env,
   );
   return res.json();
-}
-
-// Creates the page once and never touches its body again on later runs —
-// for container pages like "📓Release Notes" that a human may edit by hand.
-async function findOrCreatePage(confluenceUrl, spaceId, parentId, title, placeholderHtml, env) {
-  const existing = (await getChildPages(confluenceUrl, parentId, env)).find((p) => p.title === title);
-  if (existing) return { id: existing.id, created: false };
-
-  const created = await createConfluencePage(
-    confluenceUrl,
-    { spaceId, title, bodyHtml: placeholderHtml, parentId },
-    env,
-  );
-  return { id: created.id, created: true };
 }
 
 // Creates the page with a placeholder then fills it in, or updates it in
@@ -304,8 +293,10 @@ export function buildTicketsDatasourceBlock(jiraUrl, cloudId, ticketKeys) {
 async function warnIfTicketsUnresolved(jiraUrl, ticketKeys, env) {
   if (ticketKeys.length === 0) return;
 
+  // /rest/api/3/search was retired (410 Gone) in favour of this endpoint —
+  // see https://developer.atlassian.com/changelog/#CHANGE-2046.
   const res = await atlassianRequest(
-    `${jiraUrl}/rest/api/3/search`,
+    `${jiraUrl}/rest/api/3/search/jql`,
     {
       method: "POST",
       body: JSON.stringify({ jql: buildJql(ticketKeys), fields: ["key"], maxResults: ticketKeys.length }),
@@ -366,27 +357,26 @@ async function main() {
   const spaceId = await getConfluenceSpaceId(env.CONFLUENCE_URL, env.CONFLUENCE_SPACE_KEY, env);
   console.log(`Resolved space "${env.CONFLUENCE_SPACE_KEY}" -> id ${spaceId}`);
 
-  const projectPage = await getPageIdByTitle(env.CONFLUENCE_URL, spaceId, env.CONFLUENCE_PROJECT_PAGE, env);
-  if (!projectPage) {
+  // "📓 Release Notes" is a single page shared across every project in this
+  // space (Mobile, Front-End, Back-End...) — we publish under it directly
+  // rather than creating our own per-project index page. It must already
+  // exist; we never create it.
+  const releaseNotesPage = await getPageIdByTitle(env.CONFLUENCE_URL, spaceId, "📓 Release Notes", env);
+  if (!releaseNotesPage) {
     throw new Error(
-      `Project page "${env.CONFLUENCE_PROJECT_PAGE}" not found in space "${env.CONFLUENCE_SPACE_KEY}" — create it first.`,
+      `"📓 Release Notes" page not found in space "${env.CONFLUENCE_SPACE_KEY}" — create it first.`,
     );
   }
 
-  const { id: releaseNotesPageId } = await findOrCreatePage(
-    env.CONFLUENCE_URL,
-    spaceId,
-    projectPage.id,
-    "📓Release Notes",
-    `<p>Release notes de ${env.CONFLUENCE_PROJECT_PAGE}.</p>`,
-    env,
-  );
-
-  const versionTitle = `Release ${env.RELEASE_TAG}`;
+  // Confluence enforces page-title uniqueness across the whole space, not
+  // just among siblings under the same parent, and this parent is shared
+  // across projects — qualify the version title so it can't collide with
+  // another project's release page of the same tag.
+  const versionTitle = `${env.CONFLUENCE_PROJECT_PAGE} Release ${env.RELEASE_TAG}`;
   const { id: versionPageId, created } = await upsertPage(
     env.CONFLUENCE_URL,
     spaceId,
-    releaseNotesPageId,
+    releaseNotesPage.id,
     versionTitle,
     bodyHtml,
     env,

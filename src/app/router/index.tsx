@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router";
 import { RootLayout } from "@/app/layout/RootLayout";
 import { AvatarShowcase } from "@/features/design-system/pages/AvatarShowcase";
 import { BadgeShowcase } from "@/features/design-system/pages/BadgeShowcase";
+import { BellShowcase } from "@/features/design-system/pages/BellShowcase";
 import { ButtonShowcase } from "@/features/design-system/pages/ButtonShowcase";
 import { DesignSystemIndex } from "@/features/design-system/pages/DesignSystemIndex";
 import { ExpenseCardShowcase } from "@/features/design-system/pages/ExpenseCardShowcase";
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { path: "design-system", element: <DesignSystemIndex /> },
       { path: "design-system/avatar", element: <AvatarShowcase /> },
       { path: "design-system/badge", element: <BadgeShowcase /> },
+      { path: "design-system/bell", element: <BellShowcase /> },
       { path: "design-system/button", element: <ButtonShowcase /> },
       { path: "design-system/expense-card", element: <ExpenseCardShowcase /> },
       { path: "design-system/input", element: <InputShowcase /> },

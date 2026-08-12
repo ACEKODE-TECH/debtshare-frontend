@@ -21,7 +21,17 @@ export default {
     spacing: tokens.spacing,
     borderRadius: tokens.borderRadius,
     boxShadow: tokens.boxShadow,
-    extend: {},
+    extend: {
+      keyframes: {
+        "bell-pop": {
+          "0%": { transform: "scale(0.6)" },
+          "100%": { transform: "scale(1)" },
+        },
+      },
+      animation: {
+        "bell-pop": "bell-pop 200ms ease-out",
+      },
+    },
   },
   plugins: [],
 };

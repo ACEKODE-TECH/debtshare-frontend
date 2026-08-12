@@ -5,6 +5,7 @@ const COMPONENTS = [
   { path: "/design-system/badge", label: "Badge" },
   { path: "/design-system/bell", label: "Bell" },
   { path: "/design-system/button", label: "Button" },
+  { path: "/design-system/empty-state", label: "EmptyState" },
   { path: "/design-system/expense-card", label: "ExpenseCard" },
   { path: "/design-system/input", label: "Input" },
   { path: "/design-system/tabs", label: "Tabs" },

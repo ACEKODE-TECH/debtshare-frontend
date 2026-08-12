@@ -1,6 +1,5 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath, URL } from "node:url";
-
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
@@ -22,8 +21,6 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     css: true,
-    // Scoped to src/ so Vitest does not try to collect the Playwright specs
-    // in e2e/, which its default `**/*.spec.ts` pattern would otherwise match.
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",

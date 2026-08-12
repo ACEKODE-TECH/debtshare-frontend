@@ -1,23 +1,33 @@
 #!/usr/bin/env node
 // Composes a Confluence release-notes page from two sources:
 //   1. The human-written CHANGELOG.md block for this version (from Changesets).
-//   2. The Jira tickets referenced by `DEB-XXXX` in the commits since the
-//      previous release tag (resolved by release-notes.yml).
+//   2. A live Confluence "Jira issues" smart-link, embedding a JQL query over
+//      the `DEB-XXXX` tickets referenced by the commits since the previous
+//      release tag (resolved by release-notes.yml). Confluence renders this
+//      as a table by querying Jira directly — the page always shows current
+//      status/assignee, we never snapshot stale data.
 //
-// Fails loudly and exits before calling Confluence if any Jira ticket can't
-// be resolved — we never want a partial/incomplete page published.
+// Page hierarchy in Confluence: <CONFLUENCE_PROJECT_PAGE> (must exist) >
+// "📓Release Notes" (created once, never overwritten) > "Release vX.Y.Z"
+// (created or updated every run — safe to re-run against the same tag).
+//
+// Trade-off accepted deliberately: because the ticket table is a live JQL
+// embed, we can't detect at publish time whether a referenced ticket key
+// actually exists in Jira (`key in (...)` just silently omits unknown keys).
+// We do a best-effort bulk search first and warn in the log about any
+// ticket that doesn't resolve, but this is observability only — it never
+// blocks the publish, unlike the CHANGELOG.md handling below which still
+// fails loudly on unrecoverable errors.
 
 import { readFileSync } from "node:fs";
 
 const REQUIRED_ENV = [
-  "JIRA_BASE_URL",
-  "JIRA_EMAIL",
-  "JIRA_API_TOKEN",
-  "CONFLUENCE_BASE_URL",
-  "CONFLUENCE_EMAIL",
-  "CONFLUENCE_API_TOKEN",
+  "ATLASSIAN_EMAIL",
+  "ATLASSIAN_API_TOKEN",
+  "JIRA_URL",
+  "CONFLUENCE_URL",
   "CONFLUENCE_SPACE_KEY",
-  "CONFLUENCE_PARENT_PAGE_ID",
+  "CONFLUENCE_PROJECT_PAGE",
   "RELEASE_TAG",
 ];
 
@@ -27,81 +37,143 @@ function readEnv() {
     console.error(`Missing required environment variable(s): ${missing.join(", ")}`);
     process.exit(1);
   }
-  return Object.fromEntries(REQUIRED_ENV.map((name) => [name, process.env[name]]));
+  const env = Object.fromEntries(REQUIRED_ENV.map((name) => [name, process.env[name]]));
+  env.JIRA_URL = env.JIRA_URL.replace(/\/+$/, "");
+  env.CONFLUENCE_URL = env.CONFLUENCE_URL.replace(/\/+$/, "").replace(/\/wiki$/, "") + "/wiki";
+  return env;
 }
 
-// --- Jira ---------------------------------------------------------------
+// --- Atlassian HTTP -------------------------------------------------------
 
-async function fetchJiraIssue(env, key) {
-  const auth = Buffer.from(`${env.JIRA_EMAIL}:${env.JIRA_API_TOKEN}`).toString("base64");
-  const url = `${env.JIRA_BASE_URL}/rest/api/3/issue/${key}?fields=summary,issuetype,status`;
+function basicAuthHeader(env) {
+  return "Basic " + Buffer.from(`${env.ATLASSIAN_EMAIL}:${env.ATLASSIAN_API_TOKEN}`).toString("base64");
+}
 
+async function atlassianRequest(url, options, env) {
   const res = await fetch(url, {
-    headers: { Authorization: `Basic ${auth}`, Accept: "application/json" },
+    ...options,
+    headers: {
+      Authorization: basicAuthHeader(env),
+      Accept: "application/json",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...options.headers,
+    },
   });
 
-  if (res.status === 404) {
-    throw new Error(`${key} not found in Jira (404) — check the ticket key or Jira permissions`);
-  }
   if (!res.ok) {
-    throw new Error(`Jira request for ${key} failed: ${res.status} ${res.statusText}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(`${options.method ?? "GET"} ${url} failed: ${res.status} ${res.statusText}\n${text}`);
   }
 
+  return res;
+}
+
+// tenant_info is an unauthenticated Confluence endpoint used only to resolve
+// the Atlassian cloudId a Jira-issues smart-link datasource needs.
+async function getCloudId(siteUrl) {
+  const res = await fetch(`${siteUrl}/_edge/tenant_info`);
+  if (!res.ok) {
+    throw new Error(
+      `Could not resolve cloudId from ${siteUrl}/_edge/tenant_info: ${res.status} ${res.statusText}`,
+    );
+  }
   const data = await res.json();
-  return {
-    key,
-    summary: data.fields.summary,
-    type: data.fields.issuetype?.name ?? "Sin tipo",
-    status: data.fields.status?.name ?? "Desconocido",
-  };
+  if (!data.cloudId) throw new Error(`${siteUrl}/_edge/tenant_info response did not include a cloudId`);
+  return data.cloudId;
 }
 
-async function resolveTickets(env, ticketKeys) {
-  const results = await Promise.allSettled(ticketKeys.map((key) => fetchJiraIssue(env, key)));
+// --- Confluence v2 pages ---------------------------------------------------
 
-  const issues = [];
-  const failures = [];
-  results.forEach((result, i) => {
-    if (result.status === "fulfilled") {
-      issues.push(result.value);
-    } else {
-      failures.push({ key: ticketKeys[i], error: result.reason });
-    }
-  });
-
-  if (failures.length > 0) {
-    console.error(`\nFailed to resolve ${failures.length} of ${ticketKeys.length} Jira ticket(s):`);
-    for (const failure of failures) {
-      console.error(`  - ${failure.key}: ${failure.error.message ?? failure.error}`);
-    }
-    console.error("\nAborting before creating the Confluence page — no partial publish.");
-    process.exit(1);
-  }
-
-  return issues;
+async function getConfluenceSpaceId(confluenceUrl, spaceKey, env) {
+  const url = `${confluenceUrl}/api/v2/spaces?keys=${encodeURIComponent(spaceKey)}&limit=1`;
+  const data = await (await atlassianRequest(url, {}, env)).json();
+  const space = data.results?.[0];
+  if (!space) throw new Error(`No Confluence space found for key "${spaceKey}"`);
+  return space.id;
 }
 
-const ISSUE_TYPE_ORDER = ["Story", "Task", "Bug", "Sub-task", "Subtarea"];
+// Returns null only for a genuine "no page with this title" (empty result
+// set); any actual API error propagates from atlassianRequest instead.
+async function getPageIdByTitle(confluenceUrl, spaceId, title, env) {
+  const url = `${confluenceUrl}/api/v2/pages?space-id=${spaceId}&title=${encodeURIComponent(title)}&limit=1`;
+  const data = await (await atlassianRequest(url, {}, env)).json();
+  return data.results?.[0] ?? null;
+}
 
-export function groupIssuesByType(issues) {
-  const groups = new Map();
-  for (const issue of issues) {
-    if (!groups.has(issue.type)) groups.set(issue.type, []);
-    groups.get(issue.type).push(issue);
+async function getChildPages(confluenceUrl, parentPageId, env) {
+  const url = `${confluenceUrl}/api/v2/pages/${parentPageId}/children?limit=50`;
+  const data = await (await atlassianRequest(url, {}, env)).json();
+  return data.results ?? [];
+}
+
+async function createConfluencePage(confluenceUrl, { spaceId, title, bodyHtml, parentId }, env) {
+  const res = await atlassianRequest(
+    `${confluenceUrl}/api/v2/pages`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        spaceId,
+        status: "current",
+        title,
+        parentId,
+        body: { representation: "storage", value: bodyHtml },
+      }),
+    },
+    env,
+  );
+  return res.json();
+}
+
+async function updateConfluencePage(confluenceUrl, pageId, { title, bodyHtml }, env) {
+  const current = await (await atlassianRequest(`${confluenceUrl}/api/v2/pages/${pageId}`, {}, env)).json();
+  const res = await atlassianRequest(
+    `${confluenceUrl}/api/v2/pages/${pageId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        id: pageId,
+        status: "current",
+        title,
+        body: { representation: "storage", value: bodyHtml },
+        version: { number: current.version.number + 1, message: "Actualizado por release-notes automation" },
+      }),
+    },
+    env,
+  );
+  return res.json();
+}
+
+// Creates the page once and never touches its body again on later runs —
+// for container pages like "📓Release Notes" that a human may edit by hand.
+async function findOrCreatePage(confluenceUrl, spaceId, parentId, title, placeholderHtml, env) {
+  const existing = (await getChildPages(confluenceUrl, parentId, env)).find((p) => p.title === title);
+  if (existing) return { id: existing.id, created: false };
+
+  const created = await createConfluencePage(
+    confluenceUrl,
+    { spaceId, title, bodyHtml: placeholderHtml, parentId },
+    env,
+  );
+  return { id: created.id, created: true };
+}
+
+// Creates the page with a placeholder then fills it in, or updates it in
+// place if it already exists — safe to re-run against the same release tag.
+async function upsertPage(confluenceUrl, spaceId, parentId, title, bodyHtml, env) {
+  const existing = (await getChildPages(confluenceUrl, parentId, env)).find((p) => p.title === title);
+
+  if (existing) {
+    await updateConfluencePage(confluenceUrl, existing.id, { title, bodyHtml }, env);
+    return { id: existing.id, created: false };
   }
 
-  for (const group of groups.values()) {
-    group.sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true }));
-  }
-
-  return [...groups.entries()].sort(([a], [b]) => {
-    const ai = ISSUE_TYPE_ORDER.indexOf(a);
-    const bi = ISSUE_TYPE_ORDER.indexOf(b);
-    if (ai === -1 && bi === -1) return a.localeCompare(b);
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
+  const created = await createConfluencePage(
+    confluenceUrl,
+    { spaceId, title, bodyHtml: "<p>Generando contenido…</p>", parentId },
+    env,
+  );
+  await updateConfluencePage(confluenceUrl, created.id, { title, bodyHtml }, env);
+  return { id: created.id, created: true };
 }
 
 // --- CHANGELOG.md ---------------------------------------------------------
@@ -137,7 +209,12 @@ export function readChangelogBlock(version) {
 // --- Markdown (Changesets output) -> Confluence storage format ------------
 
 function escapeHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 function inlineMarkdownToHtml(text) {
@@ -183,67 +260,77 @@ export function changelogBlockToStorageFormat(block) {
   return html.join("\n");
 }
 
-// --- Page body composition -------------------------------------------------
+// --- Jira tickets: live smart-link table -----------------------------------
 
-export function ticketsSectionToStorageFormat(jiraBaseUrl, groupedIssues) {
-  if (groupedIssues.length === 0) {
+// Fixed identifier for Confluence Cloud's built-in "Jira issues" smart-link
+// datasource type. Not tenant-specific — same value across Atlassian sites.
+const JIRA_ISSUES_DATASOURCE_ID = "d8b75300-dfda-4519-b6cd-e49abbd50401";
+
+export function buildJql(ticketKeys) {
+  return `key in (${ticketKeys.join(", ")}) ORDER BY created DESC`;
+}
+
+export function buildTicketsDatasourceBlock(jiraUrl, cloudId, ticketKeys) {
+  if (ticketKeys.length === 0) {
     return "<h2>Tickets de Jira</h2>\n<p><em>Ningún ticket DEB-XXXX referenciado en esta versión.</em></p>";
   }
 
-  const html = ["<h2>Tickets de Jira</h2>"];
-  for (const [type, issues] of groupedIssues) {
-    html.push(`<h3>${escapeHtml(type)}</h3>`);
-    html.push("<ul>");
-    for (const issue of issues) {
-      html.push(
-        `<li><a href="${jiraBaseUrl}/browse/${issue.key}">${escapeHtml(issue.key)}</a> — ` +
-          `${escapeHtml(issue.summary)} <em>(${escapeHtml(issue.status)})</em></li>`,
-      );
-    }
-    html.push("</ul>");
-  }
-  return html.join("\n");
+  const jql = buildJql(ticketKeys);
+  const issuesUrl = `${jiraUrl}/issues/?jql=${encodeURIComponent(jql)}`;
+
+  const datasource = {
+    id: JIRA_ISSUES_DATASOURCE_ID,
+    parameters: { cloudId, jql },
+    views: [
+      {
+        type: "table",
+        properties: {
+          columns: [{ key: "issuetype" }, { key: "key" }, { key: "summary" }, { key: "status" }],
+        },
+      },
+    ],
+  };
+
+  return [
+    "<h2>Tickets de Jira</h2>",
+    "<p />",
+    `<a href="${escapeHtml(issuesUrl)}" data-card-appearance="block" data-datasource="${escapeHtml(JSON.stringify(datasource))}">${escapeHtml(issuesUrl)}</a>`,
+  ].join("\n");
 }
 
-export function composePageBody({ changelogBlock, jiraBaseUrl, groupedIssues }) {
+// Best-effort only: warns in the log about ticket keys the smart-link table
+// will silently drop, but never blocks the publish. A failure of this check
+// itself (network error, endpoint change) is swallowed by the caller.
+async function warnIfTicketsUnresolved(jiraUrl, ticketKeys, env) {
+  if (ticketKeys.length === 0) return;
+
+  const res = await atlassianRequest(
+    `${jiraUrl}/rest/api/3/search`,
+    {
+      method: "POST",
+      body: JSON.stringify({ jql: buildJql(ticketKeys), fields: ["key"], maxResults: ticketKeys.length }),
+    },
+    env,
+  );
+  const data = await res.json();
+  const resolvedKeys = new Set((data.issues ?? []).map((issue) => issue.key));
+  const missing = ticketKeys.filter((key) => !resolvedKeys.has(key));
+
+  if (missing.length > 0) {
+    console.warn(
+      `Warning: ${missing.length} ticket(s) referenced in commits were not found in Jira and won't appear in the table: ${missing.join(", ")}`,
+    );
+  }
+}
+
+// --- Page body composition -------------------------------------------------
+
+export function composePageBody({ changelogBlock, ticketsBlockHtml }) {
   const changelogHtml = changelogBlock
     ? changelogBlockToStorageFormat(changelogBlock)
     : "<p><em>Sin entradas de changelog para esta versión.</em></p>";
 
-  return [
-    "<h2>Novedades</h2>",
-    changelogHtml,
-    ticketsSectionToStorageFormat(jiraBaseUrl, groupedIssues),
-  ].join("\n");
-}
-
-// --- Confluence -------------------------------------------------------------
-
-async function createConfluencePage(env, { title, bodyHtml }) {
-  const auth = Buffer.from(`${env.CONFLUENCE_EMAIL}:${env.CONFLUENCE_API_TOKEN}`).toString("base64");
-
-  const res = await fetch(`${env.CONFLUENCE_BASE_URL}/wiki/rest/api/content`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${auth}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      type: "page",
-      title,
-      space: { key: env.CONFLUENCE_SPACE_KEY },
-      ancestors: [{ id: env.CONFLUENCE_PARENT_PAGE_ID }],
-      body: { storage: { value: bodyHtml, representation: "storage" } },
-    }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Confluence page creation failed: ${res.status} ${res.statusText}\n${text}`);
-  }
-
-  return res.json();
+  return ["<h2>Novedades</h2>", changelogHtml, ticketsBlockHtml].join("\n");
 }
 
 // --- Entry point --------------------------------------------------------
@@ -265,20 +352,48 @@ async function main() {
     console.warn(`No CHANGELOG.md entry found for version ${version} — publishing without it.`);
   }
 
-  const issues = await resolveTickets(env, ticketKeys);
-  const groupedIssues = groupIssuesByType(issues);
+  try {
+    await warnIfTicketsUnresolved(env.JIRA_URL, ticketKeys, env);
+  } catch (err) {
+    console.warn(`Could not verify Jira tickets ahead of publish (continuing anyway): ${err.message}`);
+  }
 
-  const bodyHtml = composePageBody({ changelogBlock, jiraBaseUrl: env.JIRA_BASE_URL, groupedIssues });
+  const siteUrl = env.CONFLUENCE_URL.replace(/\/wiki$/, "");
+  const cloudId = await getCloudId(siteUrl);
+  const ticketsBlockHtml = buildTicketsDatasourceBlock(env.JIRA_URL, cloudId, ticketKeys);
+  const bodyHtml = composePageBody({ changelogBlock, ticketsBlockHtml });
 
-  const releaseDate = new Date().toISOString().slice(0, 10);
-  const title = `Release ${env.RELEASE_TAG} — ${releaseDate}`;
+  const spaceId = await getConfluenceSpaceId(env.CONFLUENCE_URL, env.CONFLUENCE_SPACE_KEY, env);
+  console.log(`Resolved space "${env.CONFLUENCE_SPACE_KEY}" -> id ${spaceId}`);
 
-  console.log(`Publishing "${title}" to Confluence space ${env.CONFLUENCE_SPACE_KEY}...`);
-  const page = await createConfluencePage(env, { title, bodyHtml });
+  const projectPage = await getPageIdByTitle(env.CONFLUENCE_URL, spaceId, env.CONFLUENCE_PROJECT_PAGE, env);
+  if (!projectPage) {
+    throw new Error(
+      `Project page "${env.CONFLUENCE_PROJECT_PAGE}" not found in space "${env.CONFLUENCE_SPACE_KEY}" — create it first.`,
+    );
+  }
 
-  const webUrl =
-    page._links?.base && page._links?.webui ? `${page._links.base}${page._links.webui}` : "(url unknown)";
-  console.log(`Published: ${webUrl}`);
+  const { id: releaseNotesPageId } = await findOrCreatePage(
+    env.CONFLUENCE_URL,
+    spaceId,
+    projectPage.id,
+    "📓Release Notes",
+    `<p>Release notes de ${env.CONFLUENCE_PROJECT_PAGE}.</p>`,
+    env,
+  );
+
+  const versionTitle = `Release ${env.RELEASE_TAG}`;
+  const { id: versionPageId, created } = await upsertPage(
+    env.CONFLUENCE_URL,
+    spaceId,
+    releaseNotesPageId,
+    versionTitle,
+    bodyHtml,
+    env,
+  );
+
+  console.log(`${created ? "Created" : "Updated"} "${versionTitle}" (page ${versionPageId})`);
+  console.log(`${siteUrl}/wiki/spaces/${env.CONFLUENCE_SPACE_KEY}/pages/${versionPageId}`);
 }
 
 // Only run when executed directly (not when imported for tests/simulation).

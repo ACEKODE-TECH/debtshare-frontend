@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryFn, StoryObj } from "@storybook/react-vite";
 
 import { Avatar, AvatarGroup } from "./Avatar";
 
@@ -31,38 +31,32 @@ export const Placeholder: Story = {
   args: { variant: "placeholder", size: "lg" },
 };
 
-export const Sizes: Story = {
-  render: () => (
-    <div className="flex items-center gap-md">
-      <Avatar variant="initials" name="Ana García" size="xs" />
-      <Avatar variant="initials" name="Ana García" size="sm" />
-      <Avatar variant="initials" name="Ana García" size="md" />
-      <Avatar variant="initials" name="Ana García" size="lg" />
-      <Avatar variant="initials" name="Ana García" size="xl" />
-    </div>
-  ),
-};
+export const Sizes: StoryFn = () => (
+  <div className="flex items-center gap-md">
+    <Avatar variant="initials" name="Ana García" size="xs" />
+    <Avatar variant="initials" name="Ana García" size="sm" />
+    <Avatar variant="initials" name="Ana García" size="md" />
+    <Avatar variant="initials" name="Ana García" size="lg" />
+    <Avatar variant="initials" name="Ana García" size="xl" />
+  </div>
+);
 
-export const States: Story = {
-  render: () => (
-    <div className="flex items-center gap-md">
-      <Avatar variant="initials" name="Default" size="lg" state="default" />
-      <Avatar variant="initials" name="Current User" size="lg" state="current-user" />
-      <Avatar variant="initials" name="Selected" size="lg" state="selected" />
-      <Avatar variant="initials" name="Disabled" size="lg" state="disabled" />
-      <Avatar variant="initials" name="Loading" size="lg" state="loading" />
-    </div>
-  ),
-};
+export const States: StoryFn = () => (
+  <div className="flex items-center gap-md">
+    <Avatar variant="initials" name="Default" size="lg" state="default" />
+    <Avatar variant="initials" name="Current User" size="lg" state="current-user" />
+    <Avatar variant="initials" name="Selected" size="lg" state="selected" />
+    <Avatar variant="initials" name="Disabled" size="lg" state="disabled" />
+    <Avatar variant="initials" name="Loading" size="lg" state="loading" />
+  </div>
+);
 
-export const Group: Story = {
-  render: () => (
-    <AvatarGroup max={3} size="md">
-      <Avatar variant="initials" name="María López" />
-      <Avatar variant="initials" name="Carlos Ruiz" />
-      <Avatar variant="initials" name="Ana García" />
-      <Avatar variant="initials" name="Pedro Sánchez" />
-      <Avatar variant="initials" name="Laura Martín" />
-    </AvatarGroup>
-  ),
-};
+export const Group: StoryFn = () => (
+  <AvatarGroup max={3} size="md">
+    <Avatar variant="initials" name="María López" />
+    <Avatar variant="initials" name="Carlos Ruiz" />
+    <Avatar variant="initials" name="Ana García" />
+    <Avatar variant="initials" name="Pedro Sánchez" />
+    <Avatar variant="initials" name="Laura Martín" />
+  </AvatarGroup>
+);

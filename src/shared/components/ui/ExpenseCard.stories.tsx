@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryFn, StoryObj } from "@storybook/react-vite";
 
 import { ExpenseCard } from "./ExpenseCard";
 
@@ -60,46 +60,43 @@ export const PositiveDelta: Story = {
   },
 };
 
-export const AllCategories: Story = {
-  parameters: { layout: "padded" },
-  render: () => (
-    <div className="flex w-[420px] flex-col gap-sm">
-      <ExpenseCard
-        title="Cena en Roma"
-        subtitle="Pagó María · hace 2h"
-        amount={84.5}
-        delta={-28.17}
-        category="food"
-      />
-      <ExpenseCard
-        title="Uber al centro"
-        subtitle="Pagó Carlos · ayer"
-        amount={18.5}
-        delta={9.25}
-        category="transport"
-      />
-      <ExpenseCard
-        title="Airbnb Lisboa"
-        subtitle="Pagó Ana · 5 jul"
-        amount={320}
-        delta={-106.67}
-        category="lodging"
-      />
-      <ExpenseCard
-        title="Entradas museo"
-        subtitle="Pagaste tú · hace 3h"
-        amount={45}
-        delta={30}
-        category="leisure"
-      />
-      <ExpenseCard
-        title="Regalos tienda"
-        subtitle="Pagó Pedro · ayer"
-        amount={62.9}
-        delta={-20.97}
-        category="shopping"
-      />
-      <ExpenseCard title="Propinas" subtitle="Pagó Laura · hace 1h" amount={15} delta={-5} category="other" />
-    </div>
-  ),
-};
+export const AllCategories: StoryFn = () => (
+  <div className="flex w-[420px] flex-col gap-sm">
+    <ExpenseCard
+      title="Cena en Roma"
+      subtitle="Pagó María · hace 2h"
+      amount={84.5}
+      delta={-28.17}
+      category="food"
+    />
+    <ExpenseCard
+      title="Uber al centro"
+      subtitle="Pagó Carlos · ayer"
+      amount={18.5}
+      delta={9.25}
+      category="transport"
+    />
+    <ExpenseCard
+      title="Airbnb Lisboa"
+      subtitle="Pagó Ana · 5 jul"
+      amount={320}
+      delta={-106.67}
+      category="lodging"
+    />
+    <ExpenseCard
+      title="Entradas museo"
+      subtitle="Pagaste tú · hace 3h"
+      amount={45}
+      delta={30}
+      category="leisure"
+    />
+    <ExpenseCard
+      title="Regalos tienda"
+      subtitle="Pagó Pedro · ayer"
+      amount={62.9}
+      delta={-20.97}
+      category="shopping"
+    />
+    <ExpenseCard title="Propinas" subtitle="Pagó Laura · hace 1h" amount={15} delta={-5} category="other" />
+  </div>
+);

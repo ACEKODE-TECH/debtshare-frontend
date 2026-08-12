@@ -62,7 +62,7 @@ test("changelogBlockToStorageFormat escapes HTML-significant characters", () => 
   assert.match(html, /&lt;script&gt;/);
   assert.match(html, /&amp;/);
   assert.match(html, /&quot;quotes&quot;/);
-  assert.doesNotMatch(html, /<script>/);
+  assert.doesNotMatch(html, /<script>/i);
 });
 
 test("groupIssuesByType groups and orders Story before Task before Bug, unknowns last", () => {

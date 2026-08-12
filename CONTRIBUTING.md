@@ -83,8 +83,13 @@ Es decir: tu decides cuando cerrar una version mergeando la PR de release.
 
 ### Release notes en Confluence
 
-Cuando `release.yml` publica la GitHub Release (evento `release: published`),
-se dispara `release-notes.yml`. Ese workflow:
+El propio `release.yml` incluye un segundo job (`release-notes`) que se
+ejecuta automaticamente despues de publicar la GitHub Release — todo dentro
+del mismo workflow, sin depender de un evento `release: published` externo
+(GitHub Actions no dispara workflows secundarios desde eventos generados con
+`GITHUB_TOKEN`).
+
+El job de release notes:
 
 1. Calcula el tag anterior y el actual (orden semver, no por fecha).
 2. Extrae los tickets `DEB-XXXX` mencionados en los commits de ese rango.
@@ -94,11 +99,16 @@ se dispara `release-notes.yml`. Ese workflow:
    directo consultando Jira — no somos nosotros quienes hacemos fetch de
    cada ticket, así que la tabla nunca queda desactualizada (estado,
    asignado, etc. se ven en tiempo real).
-5. Publica la pagina bajo una jerarquia en Confluence:
-   `<CONFLUENCE_PROJECT_PAGE>` (debe existir ya) → `📓Release Notes`
-   (se crea una vez, nunca se sobreescribe) → `Release vX.Y.Z` (se crea o
-   se actualiza en cada ejecucion — re-ejecutar contra el mismo tag es
-   seguro, no genera paginas duplicadas).
+5. Publica la pagina bajo `📓 Release Notes`: una unica pagina **compartida
+   entre todos los proyectos** del espacio (Mobile, Front-End, Back-End...).
+   El script no la crea, solo busca su ID por titulo — debe existir ya. Debajo
+   crea o actualiza `<CONFLUENCE_PROJECT_PAGE> Release vX.Y.Z` (hoy
+   `"Front-End Release vX.Y.Z"`); re-ejecutar contra el mismo tag actualiza
+   esa misma pagina, no genera duplicados. El titulo va cualificado con el
+   nombre del proyecto porque Confluence exige titulos unicos **en todo el
+   espacio**, no solo entre paginas hermanas — como `📓 Release Notes` es
+   compartida, un titulo generico tipo "Release v0.1.0" colisionaria con el
+   de otro proyecto.
 
 **Trade-off aceptado a proposito:** al ser un smart-link en vivo, no podemos
 detectar en el momento de publicar si un ticket referenciado realmente
@@ -113,12 +123,11 @@ Requiere los secrets documentados en
 ["Secrets para Release Notes"](#secrets-para-release-notes-confluence--jira)
 mas abajo.
 
-**Probarlo sin esperar a un release real:** el workflow tambien acepta
-`workflow_dispatch` (pestaña **Actions > Release Notes > Run workflow**)
-pidiendo un tag `vX.Y.Z` ya existente. Esto **no es un dry-run**: llama a las
-APIs reales de Jira/Confluence y crea una pagina real. Usalo solo para
-validar que los secrets funcionan, no lo dispares contra el mismo tag mas de
-una vez (crearia paginas duplicadas).
+**Probarlo sin esperar a un release real:** el workflow acepta
+`workflow_dispatch` (pestaña **Actions > Release > Run workflow**) pidiendo
+un tag `vX.Y.Z` ya existente. Esto **no es un dry-run**: llama a las APIs
+reales de Jira/Confluence y crea una pagina real. Usalo solo para validar
+que los secrets funcionan.
 
 ## Scripts utiles
 

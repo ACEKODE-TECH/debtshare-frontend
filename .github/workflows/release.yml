@@ -3,6 +3,12 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing vX.Y.Z tag — publishes release notes to Confluence only (manual test, creates a real page)"
+        required: true
+        type: string
 
 concurrency:
   group: release-${{ github.ref }}
@@ -10,17 +16,22 @@ concurrency:
 jobs:
   release:
     name: Version & changelog
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
       pull-requests: write
 
+    outputs:
+      published: ${{ steps.gh-release.outputs.published }}
+      tag: ${{ steps.gh-release.outputs.tag }}
+
     steps:
       - uses: actions/checkout@v7
         with:
-          # Changesets needs full history and tags to know what was already released.
           fetch-depth: 0
+          fetch-tags: true
 
       - uses: actions/setup-node@v7
         with:
@@ -29,10 +40,6 @@ jobs:
 
       - run: npm ci
 
-      # While changesets are pending, this keeps a "Version Packages" PR open and
-      # up to date. Once that PR is merged there are no changesets left, so the
-      # action runs `publish` instead: it creates the vX.Y.Z tag, pushes it, and
-      # opens the GitHub Release using the generated CHANGELOG entry.
       - name: Create release PR or tag release
         uses: changesets/action@v1
         with:
@@ -43,11 +50,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # changesets/action only builds its released-packages list by parsing
-      # `name@version` lines from the publish output. A single-package repo tags
-      # as `vX.Y.Z`, which never matches, so the tag is pushed but no Release is
-      # created. This step closes that gap.
       - name: Publish GitHub Release
+        id: gh-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -56,18 +60,19 @@ jobs:
 
           if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
             echo "No $TAG tag present; this run only updated the release PR."
+            echo "published=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # Only release when the tag was cut for this very commit. Otherwise a
-          # later push to main would re-release the previous version.
           if [ "$(git rev-parse "$TAG^{commit}")" != "$(git rev-parse HEAD)" ]; then
             echo "$TAG points at an earlier commit; nothing new to release."
+            echo "published=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists."
+            echo "published=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -78,3 +83,80 @@ jobs:
           else
             gh release create "$TAG" --title "$TAG" --generate-notes
           fi
+
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  release-notes:
+    name: Publish release notes to Confluence
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: |
+      always() &&
+      (
+        (github.event_name == 'push' && needs.release.outputs.published == 'true') ||
+        github.event_name == 'workflow_dispatch'
+      )
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Resolve current and previous release tag
+        id: tags
+        run: |
+          CURRENT_TAG="${{ needs.release.outputs.tag || inputs.tag }}"
+
+          PREVIOUS_TAG=$(git tag --list 'v*' --sort=-v:refname | awk -v cur="$CURRENT_TAG" '
+            found { print; exit }
+            $0 == cur { found=1 }
+          ')
+
+          echo "current_tag=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
+          echo "previous_tag=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found; treating $CURRENT_TAG as the first release."
+          else
+            echo "Diffing $PREVIOUS_TAG..$CURRENT_TAG"
+          fi
+
+      - name: Extract Jira ticket keys from commit range
+        id: tickets
+        run: |
+          CURRENT_TAG="${{ steps.tags.outputs.current_tag }}"
+          PREVIOUS_TAG="${{ steps.tags.outputs.previous_tag }}"
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            RANGE="$PREVIOUS_TAG..$CURRENT_TAG"
+          else
+            RANGE="$CURRENT_TAG"
+          fi
+
+          git log "$RANGE" --pretty=format:"%s" > /tmp/commit-subjects.txt
+
+          TICKET_KEYS=$(grep -ohE 'DEB-[0-9]+' /tmp/commit-subjects.txt | sort -u -t- -k2,2n | paste -sd, -)
+
+          echo "keys=$TICKET_KEYS" >> "$GITHUB_OUTPUT"
+          echo "Tickets referenced since $PREVIOUS_TAG: ${TICKET_KEYS:-(none)}"
+
+      - run: npm ci
+
+      - name: Compose and publish release notes
+        env:
+          ATLASSIAN_EMAIL: ${{ secrets.ATLASSIAN_EMAIL }}
+          ATLASSIAN_API_TOKEN: ${{ secrets.ATLASSIAN_API_TOKEN }}
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
+          CONFLUENCE_SPACE_KEY: ${{ secrets.CONFLUENCE_SPACE_KEY }}
+          CONFLUENCE_PROJECT_PAGE: "Front-End"
+          RELEASE_TAG: ${{ steps.tags.outputs.current_tag }}
+          TICKET_KEYS: ${{ steps.tickets.outputs.keys }}
+        run: node scripts/publish-release-notes.mjs

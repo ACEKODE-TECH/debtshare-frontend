@@ -90,9 +90,9 @@ jobs:
           JIRA_URL: ${{ secrets.JIRA_URL }}
           CONFLUENCE_URL: ${{ secrets.CONFLUENCE_URL }}
           CONFLUENCE_SPACE_KEY: ${{ secrets.CONFLUENCE_SPACE_KEY }}
-          # Top-level Confluence page this project's release notes live
-          # under. Must already exist — see CONTRIBUTING.md. Not a secret,
-          # just the single project this repo publishes to.
+          # Qualifies the release page's title (e.g. "Front-End Release
+          # v1.2.0") so it stays unique inside the shared "📓 Release Notes"
+          # page — see CONTRIBUTING.md. Not a secret, just this repo's name.
           CONFLUENCE_PROJECT_PAGE: "Front-End"
           RELEASE_TAG: ${{ steps.tags.outputs.current_tag }}
           TICKET_KEYS: ${{ steps.tickets.outputs.keys }}

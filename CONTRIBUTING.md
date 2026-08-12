@@ -94,11 +94,16 @@ se dispara `release-notes.yml`. Ese workflow:
    directo consultando Jira — no somos nosotros quienes hacemos fetch de
    cada ticket, así que la tabla nunca queda desactualizada (estado,
    asignado, etc. se ven en tiempo real).
-5. Publica la pagina bajo una jerarquia en Confluence:
-   `<CONFLUENCE_PROJECT_PAGE>` (debe existir ya) → `📓Release Notes`
-   (se crea una vez, nunca se sobreescribe) → `Release vX.Y.Z` (se crea o
-   se actualiza en cada ejecucion — re-ejecutar contra el mismo tag es
-   seguro, no genera paginas duplicadas).
+5. Publica la pagina bajo `📓 Release Notes`: una unica pagina **compartida
+   entre todos los proyectos** del espacio (Mobile, Front-End, Back-End...).
+   El script no la crea, solo busca su ID por titulo — debe existir ya. Debajo
+   crea o actualiza `<CONFLUENCE_PROJECT_PAGE> Release vX.Y.Z` (hoy
+   `"Front-End Release vX.Y.Z"`); re-ejecutar contra el mismo tag actualiza
+   esa misma pagina, no genera duplicados. El titulo va cualificado con el
+   nombre del proyecto porque Confluence exige titulos unicos **en todo el
+   espacio**, no solo entre paginas hermanas — como `📓 Release Notes` es
+   compartida, un titulo generico tipo "Release v0.1.0" colisionaria con el
+   de otro proyecto.
 
 **Trade-off aceptado a proposito:** al ser un smart-link en vivo, no podemos
 detectar en el momento de publicar si un ticket referenciado realmente
@@ -194,10 +199,10 @@ como secret.
 
 1. Debe existir el espacio indicado en `CONFLUENCE_SPACE_KEY`.
 2. Dentro de ese espacio debe existir ya una pagina titulada exactamente
-   como `CONFLUENCE_PROJECT_PAGE` (hoy `"Front-End"`). El script la busca
-   por titulo — si no la encuentra, el job falla explicitamente en el log
-   en vez de crear paginas huerfanas. Todo lo que cuelga de ahi
-   (`📓Release Notes` y cada `Release vX.Y.Z`) lo crea el script solo.
+   `📓 Release Notes` (compartida entre proyectos). El script la busca por
+   titulo — si no la encuentra, el job falla explicitamente en el log en vez
+   de crear paginas huerfanas o duplicadas. Solo la pagina de version
+   (`<CONFLUENCE_PROJECT_PAGE> Release vX.Y.Z`) la crea/actualiza el script.
 3. La cuenta de `ATLASSIAN_EMAIL` necesita permiso de creacion/edicion de
    paginas en ese espacio, y acceso de lectura al proyecto Jira `DEB`.
 4. El site debe tener el **Jira-Confluence Smart Links** conectado (viene

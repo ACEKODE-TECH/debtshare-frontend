@@ -28,7 +28,8 @@
     "version-packages": "changeset version",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic --exit-zero-on-changes"
   },
   "keywords": [],
   "author": "",
@@ -71,6 +72,7 @@
     "@vitejs/plugin-react": "^4",
     "@vitest/coverage-v8": "^4.1.10",
     "autoprefixer": "^10",
+    "chromatic": "^18.2.0",
     "eslint": "^10",
     "eslint-config-prettier": "^10",
     "eslint-plugin-react-hooks": "^7",

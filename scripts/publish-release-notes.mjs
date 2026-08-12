@@ -119,6 +119,21 @@ export function extractChangelogBlock(changelogContent, version) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+// CHANGELOG.md may not exist yet — e.g. a tag cut before Changesets adopted
+// this repo, or a workflow_dispatch test run against such a tag. Treat that
+// the same as "no block for this version": warn and publish without it,
+// don't crash the whole run over a missing changelog.
+export function readChangelogBlock(version) {
+  let changelogContent;
+  try {
+    changelogContent = readFileSync("CHANGELOG.md", "utf8");
+  } catch (err) {
+    if (err.code === "ENOENT") return null;
+    throw err;
+  }
+  return extractChangelogBlock(changelogContent, version);
+}
+
 // --- Markdown (Changesets output) -> Confluence storage format ------------
 
 function escapeHtml(str) {
@@ -245,10 +260,9 @@ async function main() {
     `Release ${env.RELEASE_TAG}: ${ticketKeys.length} Jira ticket(s) referenced: ${ticketKeys.join(", ") || "(none)"}`,
   );
 
-  const changelogContent = readFileSync("CHANGELOG.md", "utf8");
-  const changelogBlock = extractChangelogBlock(changelogContent, version);
+  const changelogBlock = readChangelogBlock(version);
   if (!changelogBlock) {
-    console.warn(`No CHANGELOG.md block found for version ${version} — publishing without it.`);
+    console.warn(`No CHANGELOG.md entry found for version ${version} — publishing without it.`);
   }
 
   const issues = await resolveTickets(env, ticketKeys);

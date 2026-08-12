@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 
 import {
   extractChangelogBlock,
+  readChangelogBlock,
   changelogBlockToStorageFormat,
   groupIssuesByType,
   ticketsSectionToStorageFormat,
@@ -39,6 +40,14 @@ test("extractChangelogBlock returns the block for the matching version only", ()
 test("extractChangelogBlock returns null when the version heading is missing", () => {
   const changelog = "# debtshare-frontend\n\n## 0.2.0\n\n- something\n";
   assert.equal(extractChangelogBlock(changelog, "9.9.9"), null);
+});
+
+test("readChangelogBlock returns null instead of throwing when CHANGELOG.md doesn't exist", () => {
+  // This repo has no CHANGELOG.md yet (no Changesets release has landed),
+  // so this exercises the exact ENOENT path a manual workflow_dispatch run
+  // against a pre-Changesets tag hits in production.
+  assert.doesNotThrow(() => readChangelogBlock("0.1.0"));
+  assert.equal(readChangelogBlock("0.1.0"), null);
 });
 
 test("changelogBlockToStorageFormat converts headings, bullets and inline markdown", () => {

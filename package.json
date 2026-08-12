@@ -1,6 +1,6 @@
 {
   "name": "debtshare-frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Frontend de Debtshare: gastos compartidos, escaneo de tickets y dashboard de analiticas.",
   "private": true,
   "type": "module",

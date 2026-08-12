@@ -5,6 +5,7 @@ import { AvatarShowcase } from "@/features/design-system/pages/AvatarShowcase";
 import { BadgeShowcase } from "@/features/design-system/pages/BadgeShowcase";
 import { BellShowcase } from "@/features/design-system/pages/BellShowcase";
 import { ButtonShowcase } from "@/features/design-system/pages/ButtonShowcase";
+import { EmptyStateShowcase } from "@/features/design-system/pages/EmptyStateShowcase";
 import { DesignSystemIndex } from "@/features/design-system/pages/DesignSystemIndex";
 import { ExpenseCardShowcase } from "@/features/design-system/pages/ExpenseCardShowcase";
 import { InputShowcase } from "@/features/design-system/pages/InputShowcase";
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { path: "design-system/badge", element: <BadgeShowcase /> },
       { path: "design-system/bell", element: <BellShowcase /> },
       { path: "design-system/button", element: <ButtonShowcase /> },
+      { path: "design-system/empty-state", element: <EmptyStateShowcase /> },
       { path: "design-system/expense-card", element: <ExpenseCardShowcase /> },
       { path: "design-system/input", element: <InputShowcase /> },
       { path: "design-system/tabs", element: <TabsShowcase /> },

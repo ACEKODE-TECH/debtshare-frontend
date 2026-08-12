@@ -4,12 +4,23 @@ name: Release Notes
 # vX.Y.Z tag. Builds a Confluence release-notes page combining the
 # human-written CHANGELOG.md entry with the Jira tickets referenced in the
 # commits since the previous release.
+#
+# workflow_dispatch exists only to validate Jira/Confluence credentials and
+# the composed page against an existing tag without waiting for (or faking)
+# a real release. It hits the same real APIs and creates a real Confluence
+# page — it is a manual test hook, not a dry run.
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing vX.Y.Z tag to run this for (manual test only, publishes a real Confluence page)"
+        required: true
+        type: string
 
 concurrency:
-  group: release-notes-${{ github.event.release.tag_name }}
+  group: release-notes-${{ github.event.release.tag_name || inputs.tag }}
 
 jobs:
   publish-release-notes:
@@ -32,7 +43,7 @@ jobs:
       - name: Resolve current and previous release tag
         id: tags
         run: |
-          CURRENT_TAG="${{ github.event.release.tag_name }}"
+          CURRENT_TAG="${{ github.event.release.tag_name || inputs.tag }}"
 
           # Semver sort (not chronological) so a late-published/backfilled
           # release doesn't get compared against the wrong neighbour.

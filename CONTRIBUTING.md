@@ -102,6 +102,13 @@ Requiere los secrets documentados en
 ["Secrets para Release Notes"](#secrets-para-release-notes-confluence--jira)
 mas abajo.
 
+**Probarlo sin esperar a un release real:** el workflow tambien acepta
+`workflow_dispatch` (pestaña **Actions > Release Notes > Run workflow**)
+pidiendo un tag `vX.Y.Z` ya existente. Esto **no es un dry-run**: llama a las
+APIs reales de Jira/Confluence y crea una pagina real. Usalo solo para
+validar que los secrets funcionan, no lo dispares contra el mismo tag mas de
+una vez (crearia paginas duplicadas).
+
 ## Scripts utiles
 
 | Script                          | Descripcion                                                                                                            |

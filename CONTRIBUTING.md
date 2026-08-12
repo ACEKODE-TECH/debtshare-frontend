@@ -88,15 +88,26 @@ se dispara `release-notes.yml`. Ese workflow:
 
 1. Calcula el tag anterior y el actual (orden semver, no por fecha).
 2. Extrae los tickets `DEB-XXXX` mencionados en los commits de ese rango.
-3. Consulta cada ticket en Jira (resumen, tipo, estado).
-4. Extrae del `CHANGELOG.md` el bloque de esa version.
-5. Compone una pagina en Confluence (formato storage) con el changelog arriba
-   y los tickets agrupados por tipo debajo, y la crea via API.
+3. Extrae del `CHANGELOG.md` el bloque de esa version.
+4. Compone la tabla de tickets como un **smart-link de Confluence**: un
+   bloque embebido con una JQL (`key in (...)`) que Confluence resuelve en
+   directo consultando Jira — no somos nosotros quienes hacemos fetch de
+   cada ticket, así que la tabla nunca queda desactualizada (estado,
+   asignado, etc. se ven en tiempo real).
+5. Publica la pagina bajo una jerarquia en Confluence:
+   `<CONFLUENCE_PROJECT_PAGE>` (debe existir ya) → `📓Release Notes`
+   (se crea una vez, nunca se sobreescribe) → `Release vX.Y.Z` (se crea o
+   se actualiza en cada ejecucion — re-ejecutar contra el mismo tag es
+   seguro, no genera paginas duplicadas).
 
-Si algun ticket no existe en Jira (404) o Confluence rechaza la creacion, el
-job falla explicitamente en el log y **no** se publica una pagina a medias:
-primero se resuelven todos los tickets, y solo si todos resuelven bien se
-llama a Confluence.
+**Trade-off aceptado a proposito:** al ser un smart-link en vivo, no podemos
+detectar en el momento de publicar si un ticket referenciado realmente
+existe en Jira — la JQL simplemente omite las keys que no encuentra, sin
+error visible en la tabla. Como red de seguridad hacemos una busqueda JQL
+en bloque _antes_ de publicar y avisamos en el log de cualquier ticket que
+no resuelva, pero esto es solo informativo: **nunca bloquea la publicacion**.
+El manejo de `CHANGELOG.md` si sigue fallando explicitamente ante errores
+irrecuperables (ver mas abajo).
 
 Requiere los secrets documentados en
 ["Secrets para Release Notes"](#secrets-para-release-notes-confluence--jira)
@@ -166,28 +177,29 @@ Confluence"](#release-notes-en-confluence) arriba) necesita estos secrets en
 **Settings > Secrets and variables > Actions**. Ninguno se puede derivar de
 codigo; los crea el owner del repo a mano.
 
-| Secret                      | Valor                                                                                                                      |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `JIRA_BASE_URL`             | URL base del sitio Jira Cloud, sin barra final (ej. `https://acekode.atlassian.net`)                                       |
-| `JIRA_EMAIL`                | Email de la cuenta Atlassian usada para autenticar contra la API de Jira                                                   |
-| `JIRA_API_TOKEN`            | Token de API de esa cuenta (id.atlassian.com > Security > API tokens)                                                      |
-| `CONFLUENCE_BASE_URL`       | URL base del sitio Confluence Cloud, sin barra final (normalmente igual que `JIRA_BASE_URL` si es el mismo site Atlassian) |
-| `CONFLUENCE_EMAIL`          | Email de la cuenta usada para autenticar contra la API de Confluence                                                       |
-| `CONFLUENCE_API_TOKEN`      | Token de API de esa cuenta                                                                                                 |
-| `CONFLUENCE_SPACE_KEY`      | Key del espacio Confluence donde se publican las paginas (ej. `ENG`)                                                       |
-| `CONFLUENCE_PARENT_PAGE_ID` | ID numerico de la pagina padre bajo la que cuelgan las releases                                                            |
+| Secret                 | Valor                                                                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `ATLASSIAN_EMAIL`      | Email de la cuenta Atlassian usada para autenticar contra Jira y Confluence                                                       |
+| `ATLASSIAN_API_TOKEN`  | Token de esa cuenta (id.atlassian.com > Security > API tokens) — vale para ambas APIs si Jira y Confluence viven en el mismo site |
+| `JIRA_URL`             | URL base del sitio Jira Cloud, sin barra final (ej. `https://acekode.atlassian.net`)                                              |
+| `CONFLUENCE_URL`       | URL base del sitio Confluence Cloud (con o sin `/wiki` final, el script lo normaliza)                                             |
+| `CONFLUENCE_SPACE_KEY` | Key del espacio Confluence donde se publican las paginas (ej. `ENG`)                                                              |
 
-`JIRA_EMAIL`/`CONFLUENCE_EMAIL` y sus tokens pueden ser la misma cuenta si
-Jira y Confluence viven en el mismo site Atlassian — se documentan por
-separado porque el script no asume que lo sean.
+La pagina de proyecto (`CONFLUENCE_PROJECT_PAGE`, hoy `"Front-End"`) esta
+fijada directamente en `release-notes.yml` — no es secreta, es literalmente
+el unico proyecto que este repo publica, asi que no hace falta gestionarla
+como secret.
 
 **Prerrequisito en Confluence (manual, una sola vez):**
 
 1. Debe existir el espacio indicado en `CONFLUENCE_SPACE_KEY`.
-2. Dentro de ese espacio debe existir ya una pagina padre (ej. titulada
-   "Releases") bajo la que colgaran las paginas que crea este workflow. El
-   script no la crea — solo crea paginas hijas de un `ancestors.id` que ya
-   tiene que existir. Copia el ID numerico de esa pagina (visible en su URL,
-   o en **... > Page information**) a `CONFLUENCE_PARENT_PAGE_ID`.
-3. La cuenta de `CONFLUENCE_EMAIL` necesita permiso de creacion de paginas en
-   ese espacio.
+2. Dentro de ese espacio debe existir ya una pagina titulada exactamente
+   como `CONFLUENCE_PROJECT_PAGE` (hoy `"Front-End"`). El script la busca
+   por titulo — si no la encuentra, el job falla explicitamente en el log
+   en vez de crear paginas huerfanas. Todo lo que cuelga de ahi
+   (`📓Release Notes` y cada `Release vX.Y.Z`) lo crea el script solo.
+3. La cuenta de `ATLASSIAN_EMAIL` necesita permiso de creacion/edicion de
+   paginas en ese espacio, y acceso de lectura al proyecto Jira `DEB`.
+4. El site debe tener el **Jira-Confluence Smart Links** conectado (viene
+   activado por defecto en Confluence Cloud cuando ambos productos estan en
+   el mismo site) — es lo que renderiza la tabla de tickets embebida.

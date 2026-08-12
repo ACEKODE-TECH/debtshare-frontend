@@ -1,7 +1,9 @@
 // Unit tests for the pure formatting logic in publish-release-notes.mjs
-// (changelog parsing, markdown->storage-format conversion, ticket grouping).
-// Run with `npm run test:scripts`. Uses node:test, not Vitest, since this
-// script runs outside src/ and has no DOM/browser surface to test.
+// (changelog parsing, markdown->storage-format conversion, JQL/datasource
+// composition). Run with `npm run test:scripts`. Uses node:test, not
+// Vitest, since this script runs outside src/ and has no DOM/browser
+// surface to test. Network calls (Jira/Confluence) are intentionally not
+// exercised here — see the manual workflow_dispatch trigger for that.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -10,8 +12,8 @@ import {
   extractChangelogBlock,
   readChangelogBlock,
   changelogBlockToStorageFormat,
-  groupIssuesByType,
-  ticketsSectionToStorageFormat,
+  buildJql,
+  buildTicketsDatasourceBlock,
   composePageBody,
 } from "./publish-release-notes.mjs";
 
@@ -67,44 +69,54 @@ test("changelogBlockToStorageFormat converts headings, bullets and inline markdo
 });
 
 test("changelogBlockToStorageFormat escapes HTML-significant characters", () => {
-  const html = changelogBlockToStorageFormat('- Uses <script> & "quotes"');
+  const html = changelogBlockToStorageFormat("- Uses <script> & \"quotes\" and 'apostrophes'");
   assert.match(html, /&lt;script&gt;/);
   assert.match(html, /&amp;/);
   assert.match(html, /&quot;quotes&quot;/);
+  assert.match(html, /&apos;apostrophes&apos;/);
   assert.doesNotMatch(html, /<script>/i);
 });
 
-test("groupIssuesByType groups and orders Story before Task before Bug, unknowns last", () => {
-  const issues = [
-    { key: "DEB-2", type: "Bug", summary: "b", status: "Done" },
-    { key: "DEB-1", type: "Story", summary: "a", status: "Done" },
-    { key: "DEB-3", type: "Chore", summary: "c", status: "Done" },
-    { key: "DEB-4", type: "Task", summary: "d", status: "Done" },
-  ];
-
-  const grouped = groupIssuesByType(issues);
-  const typeOrder = grouped.map(([type]) => type);
-
-  assert.deepEqual(typeOrder, ["Story", "Task", "Bug", "Chore"]);
+test("buildJql builds a `key in (...)` query ordered by creation date", () => {
+  assert.equal(buildJql(["DEB-80", "DEB-2"]), "key in (DEB-80, DEB-2) ORDER BY created DESC");
 });
 
-test("ticketsSectionToStorageFormat links each ticket to Jira and shows a placeholder when empty", () => {
-  const grouped = [["Story", [{ key: "DEB-80", summary: "Release notes", status: "In Progress" }]]];
-  const html = ticketsSectionToStorageFormat("https://acekode.atlassian.net", grouped);
+test("buildTicketsDatasourceBlock shows a placeholder when there are no tickets", () => {
+  const html = buildTicketsDatasourceBlock("https://acekode.atlassian.net", "cloud-123", []);
+  assert.match(html, /<h2>Tickets de Jira<\/h2>/);
+  assert.match(html, /Ningún ticket/);
+});
 
-  assert.match(html, /<a href="https:\/\/acekode\.atlassian\.net\/browse\/DEB-80">DEB-80<\/a>/);
-  assert.match(html, /Release notes/);
-  assert.match(html, /In Progress/);
+test("buildTicketsDatasourceBlock embeds a valid, escaped Jira-issues datasource", () => {
+  const html = buildTicketsDatasourceBlock("https://acekode.atlassian.net", "cloud-123", ["DEB-80", "DEB-2"]);
 
-  const empty = ticketsSectionToStorageFormat("https://acekode.atlassian.net", []);
-  assert.match(empty, /Ningún ticket/);
+  assert.match(html, /<h2>Tickets de Jira<\/h2>/);
+  assert.match(html, /data-card-appearance="block"/);
+
+  const attrMatch = html.match(/data-datasource="([^"]+)"/);
+  assert.ok(attrMatch, "expected a data-datasource attribute");
+
+  const unescaped = attrMatch[1]
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+  const datasource = JSON.parse(unescaped);
+
+  assert.equal(datasource.id, "d8b75300-dfda-4519-b6cd-e49abbd50401");
+  assert.equal(datasource.parameters.cloudId, "cloud-123");
+  assert.equal(datasource.parameters.jql, "key in (DEB-80, DEB-2) ORDER BY created DESC");
+  assert.deepEqual(
+    datasource.views[0].properties.columns.map((c) => c.key),
+    ["issuetype", "key", "summary", "status"],
+  );
 });
 
 test("composePageBody stitches changelog and tickets sections together in order", () => {
   const body = composePageBody({
     changelogBlock: "### Minor Changes\n- did a thing",
-    jiraBaseUrl: "https://acekode.atlassian.net",
-    groupedIssues: [["Story", [{ key: "DEB-80", summary: "Release notes", status: "Done" }]]],
+    ticketsBlockHtml: buildTicketsDatasourceBlock("https://acekode.atlassian.net", "cloud-123", ["DEB-80"]),
   });
 
   const novedadesIndex = body.indexOf("<h2>Novedades</h2>");
@@ -112,4 +124,13 @@ test("composePageBody stitches changelog and tickets sections together in order"
 
   assert.ok(novedadesIndex !== -1 && ticketsIndex !== -1);
   assert.ok(novedadesIndex < ticketsIndex, "changelog section must come before the tickets section");
+});
+
+test("composePageBody falls back to a placeholder when there is no changelog block", () => {
+  const body = composePageBody({
+    changelogBlock: null,
+    ticketsBlockHtml: buildTicketsDatasourceBlock("https://acekode.atlassian.net", "cloud-123", []),
+  });
+
+  assert.match(body, /Sin entradas de changelog/);
 });

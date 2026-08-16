@@ -1,17 +1,11 @@
 import { HttpResponse } from "msw";
 
-/** Simulates real network latency so loading states are actually exercised. */
 export function randomDelayMs(min = 300, max = 900): Promise<void> {
   const ms = Math.floor(Math.random() * (max - min + 1)) + min;
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Fails roughly `rate` of the time, for exercising error states.
- * Only active when VITE_ENABLE_MOCK_ERRORS=true — off by default so
- * development isn't interrupted and tests stay deterministic.
- */
-export function shouldSimulateError(rate = 0.08): boolean {
+export function shouldSimulateError(rate = 0.04): boolean {
   if (typeof import.meta !== "undefined" && import.meta.env?.VITE_ENABLE_MOCK_ERRORS !== "true") return false;
   return Math.random() < rate;
 }
@@ -23,22 +17,29 @@ export function errorResponse(
   return HttpResponse.json({ message }, { status });
 }
 
-export interface PaginatedResult<T> {
+// -- Cursor-based pagination ------------------------------------------------
+
+export interface CursorPage<T> {
   items: T[];
-  page: number;
-  pageSize: number;
+  nextCursor: string | null;
+  hasMore: boolean;
   total: number;
-  totalPages: number;
 }
 
-export function paginate<T>(items: T[], page: number, pageSize: number): PaginatedResult<T> {
-  const start = (page - 1) * pageSize;
-  const pagedItems = items.slice(start, start + pageSize);
-  return {
-    items: pagedItems,
-    page,
-    pageSize,
-    total: items.length,
-    totalPages: Math.max(1, Math.ceil(items.length / pageSize)),
-  };
+export function cursorPaginate<T extends { id: string }>(
+  items: T[],
+  cursor: string | null,
+  limit: number,
+): CursorPage<T> {
+  let startIndex = 0;
+  if (cursor) {
+    const cursorIndex = items.findIndex((item) => item.id === cursor);
+    startIndex = cursorIndex === -1 ? 0 : cursorIndex + 1;
+  }
+
+  const page = items.slice(startIndex, startIndex + limit);
+  const hasMore = startIndex + limit < items.length;
+  const nextCursor = hasMore ? page[page.length - 1].id : null;
+
+  return { items: page, nextCursor, hasMore, total: items.length };
 }

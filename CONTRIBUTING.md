@@ -144,6 +144,46 @@ que los secrets funcionan.
 | `npm run changeset`             | Declarar un cambio para el changelog                                                                                   |
 | `npm run release-notes:publish` | Publica la pagina de release notes en Confluence (usado por CI, requiere los secrets de Jira/Confluence en el entorno) |
 
+## Capa de mocks (MSW) y sustitucion por el backend real
+
+Toda la app consume datos a traves de MSW (Mock Service Worker). Los mocks
+viven en `src/mocks/` y simulan una API REST completa con latencia realista,
+errores aleatorios y persistencia en memoria durante la sesion.
+
+### Arquitectura
+
+```
+src/lib/endpoints.ts      ← Todas las rutas centralizadas
+src/mocks/factories.ts    ← Factories con @faker-js/faker para cada entidad
+src/mocks/db.ts           ← DB en memoria con seed determinista
+src/mocks/handlers/*.ts   ← Handlers MSW (CRUD + side-effects)
+src/mocks/utils.ts        ← Latencia, errores simulados, paginacion cursor
+```
+
+El contrato exacto de cada endpoint (metodo, ruta, request/response con
+ejemplos JSON reales) esta documentado en [`API-CONTRACT.md`](API-CONTRACT.md).
+
+### Sustituir un mock por el endpoint real
+
+No hace falta apagar MSW entero de golpe — se puede ir sustituyendo endpoint
+a endpoint:
+
+1. **Cambiar la ruta en `src/lib/endpoints.ts`** para que apunte a la URL
+   del backend real. Si la URL base cambia, ajustar `VITE_API_BASE_URL` en
+   `.env` (hoy `/api`, podria pasar a `https://api.debtshare.dev`).
+
+2. **Eliminar el handler correspondiente** en `src/mocks/handlers/`. MSW solo
+   intercepta las peticiones que matchean un handler registrado — si no hay
+   handler para esa ruta, la peticion pasa al backend real sin intervencion.
+
+3. **Comparar el contrato** del endpoint real con el documentado en
+   `API-CONTRACT.md`. Si la forma de la response difiere, ajustar el hook
+   de TanStack Query que consume ese endpoint o negociar el cambio con backend.
+
+4. **Repetir** hasta que todos los handlers esten eliminados. Cuando no quede
+   ninguno, eliminar la inicializacion del worker en `main.tsx` y las
+   dependencias de MSW.
+
 ## Configuracion manual en GitHub
 
 Esto no se puede configurar por codigo y lo gestiona el owner del repo.
@@ -181,7 +221,7 @@ Al exigir historial lineal, mergea con **squash** o **rebase**, nunca merge comm
 
 ### Secrets para Release Notes (Confluence + Jira)
 
-El workflow `release-notes.yml` (ver ["Release notes en
+El job `release-notes` dentro de `release.yml` (ver ["Release notes en
 Confluence"](#release-notes-en-confluence) arriba) necesita estos secrets en
 **Settings > Secrets and variables > Actions**. Ninguno se puede derivar de
 codigo; los crea el owner del repo a mano.
@@ -203,10 +243,10 @@ como secret.
 
 1. Debe existir el espacio indicado en `CONFLUENCE_SPACE_KEY`.
 2. Dentro de ese espacio debe existir ya una pagina titulada exactamente
-   como `CONFLUENCE_PROJECT_PAGE` (hoy `"Front-End"`). El script la busca
-   por titulo — si no la encuentra, el job falla explicitamente en el log
-   en vez de crear paginas huerfanas. Todo lo que cuelga de ahi
-   (`📓Release Notes` y cada `Release vX.Y.Z`) lo crea el script solo.
+   `📓 Release Notes` (compartida entre proyectos). El script la busca por
+   titulo — si no la encuentra, el job falla explicitamente en el log en vez
+   de crear paginas huerfanas o duplicadas. Solo la pagina de version
+   (`<CONFLUENCE_PROJECT_PAGE> Release vX.Y.Z`) la crea/actualiza el script.
 3. La cuenta de `ATLASSIAN_EMAIL` necesita permiso de creacion/edicion de
    paginas en ese espacio, y acceso de lectura al proyecto Jira `DEB`.
 4. El site debe tener el **Jira-Confluence Smart Links** conectado (viene

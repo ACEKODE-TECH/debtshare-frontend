@@ -1,0 +1,30 @@
+{
+  "appName": "Debtshare",
+  "tagline": "Cuentas claras, amistades largas.",
+  "taglineDescription": "Divide gastos, escanea tickets y liquida al instante. Todo lo que compartes, en un solo sitio.",
+  "continueWithGoogle": "Continuar con Google",
+  "emailDivider": "o con tu email",
+  "email": "Email",
+  "password": "Contraseña",
+  "emailPlaceholder": "ana@email.com",
+  "passwordPlaceholder": "••••••••",
+  "rememberDevice": "Recordarme en este dispositivo",
+  "forgotPassword": "¿Has olvidado tu contraseña?",
+  "showPassword": "Mostrar contraseña",
+  "hidePassword": "Ocultar contraseña",
+  "terms": "Términos",
+  "privacy": "Política de privacidad",
+  "termsNotice": "Al continuar aceptas nuestros",
+  "termsJoiner": "y",
+  "help": "Ayuda",
+  "status": "Estado",
+  "language": "ES",
+  "copyright": "© {{year}} Debtshare",
+  "switchToDark": "Cambiar a modo oscuro",
+  "switchToLight": "Cambiar a modo claro",
+  "validation": {
+    "emailRequired": "Introduce tu email",
+    "emailInvalid": "Introduce un email válido",
+    "passwordRequired": "Introduce tu contraseña"
+  }
+}

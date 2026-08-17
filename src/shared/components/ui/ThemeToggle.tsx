@@ -1,5 +1,7 @@
-import { useThemeStore } from "@/shared/stores/theme-store";
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/shared/lib/cn";
+import { useThemeStore } from "@/shared/stores/theme-store";
 
 function SunIcon() {
   return (
@@ -47,14 +49,15 @@ function MoonIcon() {
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggle } = useThemeStore();
+  const { t } = useTranslation();
 
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={theme === "light" ? "Cambiar a modo oscuro" : "Cambiar a modo claro"}
+      aria-label={theme === "light" ? t("switchToDark") : t("switchToLight")}
       className={cn(
-        "flex h-[32px] w-[32px] items-center justify-center rounded-sm-plus",
+        "flex h-3xl w-3xl items-center justify-center rounded-sm-plus",
         "text-text-tertiary transition-colors duration-150",
         "hover:bg-surface-hover hover:text-text-secondary",
         className,

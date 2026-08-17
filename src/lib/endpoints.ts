@@ -3,7 +3,13 @@
 // the codebase follows without changes.
 
 export const ENDPOINTS = {
-  // Auth / current user
+  // Auth
+  AUTH_LOGIN: "/auth/login",
+  AUTH_REGISTER: "/auth/register",
+  AUTH_GOOGLE: "/auth/google",
+  AUTH_LOGOUT: "/auth/logout",
+
+  // Current user
   ME: "/me",
 
   // Users

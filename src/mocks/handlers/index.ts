@@ -1,3 +1,4 @@
+import { authHandlers } from "./auth";
 import { balanceHandlers } from "./balances";
 import { categoryHandlers } from "./categories";
 import { exchangeRateHandlers } from "./exchange-rates";
@@ -10,6 +11,7 @@ import { settlementHandlers } from "./settlements";
 import { userHandlers } from "./users";
 
 export const handlers = [
+  ...authHandlers,
   ...userHandlers,
   ...groupHandlers,
   ...categoryHandlers,

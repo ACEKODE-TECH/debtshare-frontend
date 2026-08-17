@@ -1,5 +1,22 @@
 @import "../packages/design-tokens/build/web/tokens.css";
 
+/*
+ * Brand-overlay tokens — white layers on top of branded/gradient surfaces.
+ * Defined here (not in the generated tokens.css) because they are web-specific.
+ */
+:root {
+  --color-brand-overlay-faint: rgba(255, 255, 255, 0.06);
+  --color-brand-overlay-subtle: rgba(255, 255, 255, 0.08);
+  --color-brand-overlay-light: rgba(255, 255, 255, 0.15);
+  --color-brand-overlay-medium: rgba(255, 255, 255, 0.2);
+  --color-brand-overlay-strong: rgba(255, 255, 255, 0.25);
+  --color-brand-overlay-bold: rgba(255, 255, 255, 0.3);
+  --color-brand-overlay-bolder: rgba(255, 255, 255, 0.4);
+  --color-brand-overlay-text: rgba(255, 255, 255, 0.8);
+  --color-brand-overlay-text-strong: rgba(255, 255, 255, 0.85);
+  --color-brand-overlay-text-emphasis: rgba(255, 255, 255, 0.95);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

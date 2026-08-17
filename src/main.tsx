@@ -11,6 +11,7 @@ import "@fontsource/plus-jakarta-sans/700.css";
 import "@fontsource/plus-jakarta-sans/800.css";
 
 import { App } from "@/app/App";
+import "@/shared/i18n";
 
 import "./index.css";
 

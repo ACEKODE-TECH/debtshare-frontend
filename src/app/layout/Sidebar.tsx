@@ -200,23 +200,11 @@ export function Sidebar() {
           {t("nav.menu")}
         </div>
         <nav className="flex flex-col gap-2xs">
-          <NavLink to="/app" end className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
-            <svg
-              width={17}
-              height={17}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1v-9.5z" />
-            </svg>
-            {t("nav.dashboard")}
-          </NavLink>
-
-          <NavLink to="/app/groups" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
+          <NavLink
+            to="/app/groups"
+            end
+            className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}
+          >
             <svg
               width={17}
               height={17}
@@ -234,7 +222,10 @@ export function Sidebar() {
             {t("nav.groups")}
           </NavLink>
 
-          <NavLink to="/app/activity" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
+          <NavLink
+            to="/app/notifications"
+            className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}
+          >
             <svg
               width={17}
               height={17}
@@ -245,31 +236,15 @@ export function Sidebar() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 01-3.46 0" />
             </svg>
-            {t("nav.activity")}
+            {t("nav.notifications")}
             {!!unreadCount && unreadCount > 0 && (
               <span className="ml-auto rounded-pill bg-brand-subtle px-[7px] py-[2px] text-[10px] font-bold text-brand-default">
                 {unreadCount}
               </span>
             )}
-          </NavLink>
-
-          <NavLink to="/app/history" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
-            <svg
-              width={17}
-              height={17}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="4" width="18" height="16" rx="2" />
-              <path d="M3 10h18M8 4v4M16 4v4" />
-            </svg>
-            {t("nav.history")}
           </NavLink>
         </nav>
       </div>

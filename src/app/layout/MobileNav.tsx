@@ -17,34 +17,7 @@ export function MobileNav() {
 
   return (
     <nav className="flex border-t border-border-divider bg-surface-card lg:hidden">
-      <NavLink to="/app" end className={({ isActive }) => cn(TAB_BASE, isActive && TAB_ACTIVE)}>
-        {({ isActive }) => (
-          <>
-            <div
-              className={cn(
-                "flex h-[32px] w-[64px] items-center justify-center rounded-pill",
-                isActive && "bg-brand-subtle",
-              )}
-            >
-              <svg
-                width={24}
-                height={24}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1v-9.5z" />
-              </svg>
-            </div>
-            <span className="text-[11px]">{t("nav.home")}</span>
-          </>
-        )}
-      </NavLink>
-
-      <NavLink to="/app/groups" className={({ isActive }) => cn(TAB_BASE, isActive && TAB_ACTIVE)}>
+      <NavLink to="/app/groups" end className={({ isActive }) => cn(TAB_BASE, isActive && TAB_ACTIVE)}>
         {({ isActive }) => (
           <>
             <div
@@ -73,7 +46,7 @@ export function MobileNav() {
         )}
       </NavLink>
 
-      <NavLink to="/app/activity" className={({ isActive }) => cn(TAB_BASE, isActive && TAB_ACTIVE)}>
+      <NavLink to="/app/notifications" className={({ isActive }) => cn(TAB_BASE, isActive && TAB_ACTIVE)}>
         {({ isActive }) => (
           <>
             <div
@@ -99,7 +72,7 @@ export function MobileNav() {
                 <div className="absolute right-[14px] top-[2px] h-[8px] w-[8px] rounded-pill border-2 border-surface-card bg-brand-default" />
               )}
             </div>
-            <span className="text-[11px]">{t("nav.activity")}</span>
+            <span className="text-[11px]">{t("nav.notifications")}</span>
           </>
         )}
       </NavLink>

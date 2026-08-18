@@ -37,6 +37,22 @@
   },
   "acceptTermsPrefix": "Acepto los",
   "acceptTermsJoiner": "y la",
+  "nav": {
+    "dashboard": "Dashboard",
+    "groups": "Grupos",
+    "activity": "Actividad",
+    "history": "Historial",
+    "profile": "Perfil",
+    "home": "Inicio",
+    "menu": "MENÚ",
+    "search": "Buscar…",
+    "settings": "Ajustes",
+    "logout": "Cerrar sesión",
+    "switchGroup": "Cambiar grupo",
+    "noGroups": "Sin grupos todavía",
+    "createGroup": "Crear grupo",
+    "notifications": "Notificaciones"
+  },
   "validation": {
     "emailRequired": "Introduce tu email",
     "emailInvalid": "Introduce un email válido",

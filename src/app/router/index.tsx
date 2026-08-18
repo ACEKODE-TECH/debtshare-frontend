@@ -5,6 +5,15 @@ import { RootLayout } from "@/app/layout/RootLayout";
 
 import { RequireAuth, RequireGuest } from "./AuthGuard";
 
+function Placeholder({ title }: { title: string }) {
+  return (
+    <div className="p-xl lg:p-2xl">
+      <h1 className="text-display-sm font-extrabold tracking-[-0.6px] text-text-primary">{title}</h1>
+      <p className="mt-sm text-lg text-text-tertiary">Pendiente de implementar.</p>
+    </div>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -33,6 +42,14 @@ export const router = createBrowserRouter([
       },
 
       {
+        path: "invite/:token",
+        lazy: () =>
+          import("@/features/groups/pages/InvitePage").then((m) => ({
+            Component: m.InvitePage,
+          })),
+      },
+
+      {
         path: "app",
         element: <RequireAuth />,
         children: [
@@ -41,58 +58,31 @@ export const router = createBrowserRouter([
             children: [
               {
                 index: true,
-                element: (
-                  <div className="p-xl lg:p-2xl">
-                    <h1 className="text-display-sm font-extrabold tracking-[-0.6px] text-text-primary">
-                      Dashboard
-                    </h1>
-                    <p className="mt-sm text-lg text-text-tertiary">Pendiente de implementar.</p>
-                  </div>
-                ),
+                element: <Navigate to="/app/groups" replace />,
               },
               {
                 path: "groups",
-                element: (
-                  <div className="p-xl lg:p-2xl">
-                    <h1 className="text-display-sm font-extrabold tracking-[-0.6px] text-text-primary">
-                      Grupos
-                    </h1>
-                    <p className="mt-sm text-lg text-text-tertiary">Pendiente de implementar.</p>
-                  </div>
-                ),
+                element: <Placeholder title="Grupos" />,
+              },
+              {
+                path: "groups/:groupId",
+                element: <Placeholder title="Grupo" />,
+              },
+              {
+                path: "groups/:groupId/dashboard",
+                element: <Placeholder title="Dashboard de grupo" />,
+              },
+              {
+                path: "groups/:groupId/expenses/:expenseId",
+                element: <Placeholder title="Detalle de gasto" />,
               },
               {
                 path: "activity",
-                element: (
-                  <div className="p-xl lg:p-2xl">
-                    <h1 className="text-display-sm font-extrabold tracking-[-0.6px] text-text-primary">
-                      Actividad
-                    </h1>
-                    <p className="mt-sm text-lg text-text-tertiary">Pendiente de implementar.</p>
-                  </div>
-                ),
-              },
-              {
-                path: "history",
-                element: (
-                  <div className="p-xl lg:p-2xl">
-                    <h1 className="text-display-sm font-extrabold tracking-[-0.6px] text-text-primary">
-                      Historial
-                    </h1>
-                    <p className="mt-sm text-lg text-text-tertiary">Pendiente de implementar.</p>
-                  </div>
-                ),
+                element: <Placeholder title="Actividad" />,
               },
               {
                 path: "profile",
-                element: (
-                  <div className="p-xl lg:p-2xl">
-                    <h1 className="text-display-sm font-extrabold tracking-[-0.6px] text-text-primary">
-                      Perfil
-                    </h1>
-                    <p className="mt-sm text-lg text-text-tertiary">Pendiente de implementar.</p>
-                  </div>
-                ),
+                element: <Placeholder title="Perfil" />,
               },
             ],
           },

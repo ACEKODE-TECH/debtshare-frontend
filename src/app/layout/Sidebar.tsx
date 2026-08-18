@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useNavigate } from "react-router";
 
-import { useUnreadCount } from "@/features/dashboard/api/use-unread-count";
 import { useGroups } from "@/features/groups/api/use-groups";
 import { useActiveGroupStore } from "@/features/groups/stores/active-group-store";
 import { useAuthStore } from "@/features/auth/stores/auth-store";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import { cn } from "@/shared/lib/cn";
 
 const GROUP_ICON_MAP: Record<string, string> = {
@@ -21,13 +21,12 @@ function getGroupEmoji(icon: string): string {
   return GROUP_ICON_MAP[icon] || GROUP_ICON_MAP.default;
 }
 
-const NAV_ITEM = cn(
-  "flex items-center gap-[11px] rounded-lg px-md py-sm-plus text-[13.5px] font-medium",
-  "text-text-secondary transition-colors duration-150",
-  "hover:bg-surface-subtle hover:text-text-primary",
-);
+const NAV_ITEM =
+  "flex items-center gap-[11px] rounded-lg px-md py-sm-plus text-[13.5px] font-medium text-text-secondary transition-colors duration-150";
 
-const NAV_ITEM_ACTIVE = "bg-brand-subtle text-brand-default font-semibold";
+const NAV_ITEM_IDLE = "hover:bg-surface-subtle hover:text-text-primary";
+
+const NAV_ITEM_ACTIVE = "bg-brand-subtle text-brand-on-subtle font-semibold";
 
 export function Sidebar() {
   const { t } = useTranslation();
@@ -35,7 +34,6 @@ export function Sidebar() {
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const { data: groups } = useGroups();
-  const { data: unreadCount } = useUnreadCount();
   const { activeGroupId, setActiveGroup } = useActiveGroupStore();
 
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -143,7 +141,7 @@ export function Sidebar() {
                 className={cn(
                   "flex w-full items-center gap-sm-plus rounded-lg px-sm-plus py-sm text-left transition-colors duration-150",
                   group.id === activeGroupId
-                    ? "bg-brand-subtle text-brand-default"
+                    ? "bg-brand-subtle text-brand-on-subtle"
                     : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
                 )}
               >
@@ -200,23 +198,11 @@ export function Sidebar() {
           {t("nav.menu")}
         </div>
         <nav className="flex flex-col gap-2xs">
-          <NavLink to="/app" end className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
-            <svg
-              width={17}
-              height={17}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1v-9.5z" />
-            </svg>
-            {t("nav.dashboard")}
-          </NavLink>
-
-          <NavLink to="/app/groups" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
+          <NavLink
+            to="/app/groups"
+            end
+            className={({ isActive }) => cn(NAV_ITEM, isActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE)}
+          >
             <svg
               width={17}
               height={17}
@@ -234,7 +220,10 @@ export function Sidebar() {
             {t("nav.groups")}
           </NavLink>
 
-          <NavLink to="/app/activity" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
+          <NavLink
+            to="/app/activity"
+            className={({ isActive }) => cn(NAV_ITEM, isActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE)}
+          >
             <svg
               width={17}
               height={17}
@@ -248,28 +237,6 @@ export function Sidebar() {
               <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
             </svg>
             {t("nav.activity")}
-            {!!unreadCount && unreadCount > 0 && (
-              <span className="ml-auto rounded-pill bg-brand-subtle px-[7px] py-[2px] text-[10px] font-bold text-brand-default">
-                {unreadCount}
-              </span>
-            )}
-          </NavLink>
-
-          <NavLink to="/app/history" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
-            <svg
-              width={17}
-              height={17}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="4" width="18" height="16" rx="2" />
-              <path d="M3 10h18M8 4v4M16 4v4" />
-            </svg>
-            {t("nav.history")}
           </NavLink>
         </nav>
       </div>
@@ -283,6 +250,7 @@ export function Sidebar() {
           <div className="truncate text-[13px] font-semibold text-text-primary">{user?.name}</div>
           <div className="truncate text-[11.5px] text-text-muted">{user?.email}</div>
         </div>
+        <ThemeToggle className="flex-none" />
         <button
           type="button"
           onClick={handleLogout}

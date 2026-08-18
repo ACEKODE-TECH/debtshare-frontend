@@ -53,6 +53,17 @@
     "createGroup": "Crear grupo",
     "notifications": "Notificaciones"
   },
+  "invite": {
+    "loading": "Cargando invitación…",
+    "title": "Te han invitado a un grupo",
+    "groupName": "{{name}}",
+    "errorTitle": "Invitación no válida",
+    "invalidLink": "Este enlace de invitación no es válido o ha expirado.",
+    "goHome": "Ir al inicio",
+    "accept": "Unirme al grupo",
+    "decline": "No, gracias",
+    "joining": "Uniéndose…"
+  },
   "validation": {
     "emailRequired": "Introduce tu email",
     "emailInvalid": "Introduce un email válido",

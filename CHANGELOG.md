@@ -1,5 +1,19 @@
 # debtshare-frontend
 
+## 0.3.0
+
+### Minor Changes
+
+- [#52](https://github.com/ACEKODE-TECH/debtshare-frontend/pull/52) [`37bdb54`](https://github.com/ACEKODE-TECH/debtshare-frontend/commit/37bdb547b054b91fab64da4e76221290a186d851) Thanks [@Fer97p](https://github.com/Fer97p)! - Add authenticated app layout with sidebar navigation, workspace-style group switcher, notification badge, and responsive mobile bottom tabs
+
+- [#53](https://github.com/ACEKODE-TECH/debtshare-frontend/pull/53) [`6b52c47`](https://github.com/ACEKODE-TECH/debtshare-frontend/commit/6b52c47a63fe1033fddabe859905ffb94c1211e6) Thanks [@Fer97p](https://github.com/Fer97p)! - Restructure app routes and add invitation flow with returnTo redirect
+
+- [#50](https://github.com/ACEKODE-TECH/debtshare-frontend/pull/50) [`fae9e86`](https://github.com/ACEKODE-TECH/debtshare-frontend/commit/fae9e869254b9b20d97eae6f92afd35516c4e59f) Thanks [@Fer97p](https://github.com/Fer97p)! - Add login screen with simulated auth layer, route guards, theme toggle, and i18n system
+
+- [#46](https://github.com/ACEKODE-TECH/debtshare-frontend/pull/46) [`e6c791f`](https://github.com/ACEKODE-TECH/debtshare-frontend/commit/e6c791fdf66ba6d6922b149beedca982135fd337) Thanks [@Fer97p](https://github.com/Fer97p)! - Add complete mock data layer: MSW handlers with full CRUD for all domain entities, faker-based factories, in-memory DB, cursor-based pagination, simulated OCR endpoint, and API contract documentation
+
+- [#51](https://github.com/ACEKODE-TECH/debtshare-frontend/pull/51) [`3953f08`](https://github.com/ACEKODE-TECH/debtshare-frontend/commit/3953f088a24c8b4f7005682613a66f0e9b0f0a4b) Thanks [@Fer97p](https://github.com/Fer97p)! - Add registration page with alias availability check, password strength meter, and terms acceptance
+
 ## 0.2.0
 
 ### Minor Changes

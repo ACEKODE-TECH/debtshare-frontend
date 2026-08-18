@@ -21,11 +21,10 @@ function getGroupEmoji(icon: string): string {
   return GROUP_ICON_MAP[icon] || GROUP_ICON_MAP.default;
 }
 
-const NAV_ITEM = cn(
-  "flex items-center gap-[11px] rounded-lg px-md py-sm-plus text-[13.5px] font-medium",
-  "text-text-secondary transition-colors duration-150",
-  "hover:bg-surface-subtle hover:text-text-primary",
-);
+const NAV_ITEM =
+  "flex items-center gap-[11px] rounded-lg px-md py-sm-plus text-[13.5px] font-medium text-text-secondary transition-colors duration-150";
+
+const NAV_ITEM_IDLE = "hover:bg-surface-subtle hover:text-text-primary";
 
 const NAV_ITEM_ACTIVE = "bg-brand-subtle text-brand-default font-semibold";
 
@@ -202,7 +201,7 @@ export function Sidebar() {
           <NavLink
             to="/app/groups"
             end
-            className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}
+            className={({ isActive }) => cn(NAV_ITEM, isActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE)}
           >
             <svg
               width={17}
@@ -221,7 +220,10 @@ export function Sidebar() {
             {t("nav.groups")}
           </NavLink>
 
-          <NavLink to="/app/activity" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
+          <NavLink
+            to="/app/activity"
+            className={({ isActive }) => cn(NAV_ITEM, isActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE)}
+          >
             <svg
               width={17}
               height={17}

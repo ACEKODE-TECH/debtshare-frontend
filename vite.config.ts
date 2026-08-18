@@ -7,6 +7,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ["react", "react-dom"],
     alias: {
       "@/app": fileURLToPath(new URL("./src/app", import.meta.url)),
       "@/features": fileURLToPath(new URL("./src/features", import.meta.url)),

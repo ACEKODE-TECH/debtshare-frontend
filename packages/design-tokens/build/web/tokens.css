@@ -204,9 +204,10 @@
   --color-brand-default: var(--color-brand-primary);
   --color-brand-hover: var(--color-brand-primary-hover);
   --color-brand-pressed: var(--color-brand-primary-hover);
-  --color-brand-subtle: var(--color-brand-primary-tint);
-  --color-brand-subtle-strong: var(--color-brand-primary-tint-alt);
+  --color-brand-subtle: var(--color-brand-primary-tint-alt);
+  --color-brand-subtle-strong: #c4d5f6;
   --color-brand-ring: var(--color-brand-primary-light);
+  --color-brand-on-subtle: var(--color-brand-primary);
   --color-brand-on-brand: var(--color-text-light-on-brand);
   --color-brand-disabled-bg: var(--color-neutral-300);
   --color-brand-disabled-text: var(--color-neutral-550);
@@ -266,4 +267,9 @@
   --color-border-divider: var(--color-surface-dark-divider);
   --color-border-readonly: var(--color-neutral-775);
   --color-brand-disabled-bg: var(--color-neutral-775);
+  --color-brand-subtle: #1e2d4d;
+  --color-brand-subtle-strong: #253a5a;
+  --color-brand-on-subtle: var(--color-brand-primary-lighter);
+  --color-brand-ring: var(--color-brand-primary-lighter);
+  --color-brand-primary-tint-alt: var(--color-brand-primary-tint-darker);
 }

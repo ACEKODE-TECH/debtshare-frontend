@@ -26,7 +26,7 @@ const NAV_ITEM =
 
 const NAV_ITEM_IDLE = "hover:bg-surface-subtle hover:text-text-primary";
 
-const NAV_ITEM_ACTIVE = "bg-brand-subtle text-brand-default font-semibold";
+const NAV_ITEM_ACTIVE = "bg-brand-subtle text-brand-on-subtle font-semibold";
 
 export function Sidebar() {
   const { t } = useTranslation();
@@ -141,7 +141,7 @@ export function Sidebar() {
                 className={cn(
                   "flex w-full items-center gap-sm-plus rounded-lg px-sm-plus py-sm text-left transition-colors duration-150",
                   group.id === activeGroupId
-                    ? "bg-brand-subtle text-brand-default"
+                    ? "bg-brand-subtle text-brand-on-subtle"
                     : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
                 )}
               >

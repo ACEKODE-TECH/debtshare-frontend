@@ -37,6 +37,7 @@ export default {
       "subtle": "var(--color-brand-subtle)",
       "subtle-strong": "var(--color-brand-subtle-strong)",
       "ring": "var(--color-brand-ring)",
+      "on-subtle": "var(--color-brand-on-subtle)",
       "on-brand": "var(--color-brand-on-brand)",
       "disabled-bg": "var(--color-brand-disabled-bg)",
       "disabled-text": "var(--color-brand-disabled-text)",

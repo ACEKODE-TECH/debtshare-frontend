@@ -8,7 +8,7 @@ const TAB_BASE = cn(
   "text-text-secondary transition-colors duration-150",
 );
 
-const TAB_ACTIVE = "text-brand-default font-semibold";
+const TAB_ACTIVE = "text-brand-on-subtle font-semibold";
 
 export function MobileNav() {
   const { t } = useTranslation();

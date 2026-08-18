@@ -5,6 +5,7 @@ import { NavLink, useNavigate } from "react-router";
 import { useGroups } from "@/features/groups/api/use-groups";
 import { useActiveGroupStore } from "@/features/groups/stores/active-group-store";
 import { useAuthStore } from "@/features/auth/stores/auth-store";
+import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import { cn } from "@/shared/lib/cn";
 
 const GROUP_ICON_MAP: Record<string, string> = {
@@ -247,6 +248,7 @@ export function Sidebar() {
           <div className="truncate text-[13px] font-semibold text-text-primary">{user?.name}</div>
           <div className="truncate text-[11.5px] text-text-muted">{user?.email}</div>
         </div>
+        <ThemeToggle className="flex-none" />
         <button
           type="button"
           onClick={handleLogout}

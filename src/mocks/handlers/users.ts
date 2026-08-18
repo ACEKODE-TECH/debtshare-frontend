@@ -41,6 +41,14 @@ export const userHandlers = [
     return HttpResponse.json(user);
   }),
 
+  // GET /users/check-alias/:alias
+  http.get("/api/users/check-alias/:alias", async ({ params }) => {
+    await randomDelayMs(200, 500);
+    const alias = (params.alias as string).toLowerCase();
+    const taken = getDb().users.some((u) => u.alias.toLowerCase() === alias);
+    return HttpResponse.json({ available: !taken });
+  }),
+
   // GET /users/alias/:alias
   http.get("/api/users/alias/:alias", async ({ params }) => {
     await randomDelayMs();

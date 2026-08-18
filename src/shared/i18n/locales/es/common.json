@@ -22,9 +22,30 @@
   "copyright": "© {{year}} Debtshare",
   "switchToDark": "Cambiar a modo oscuro",
   "switchToLight": "Cambiar a modo claro",
+  "alias": "Alias",
+  "aliasPublic": "Alias público",
+  "aliasHint": "3–20 caracteres · letras, números, punto y guion bajo",
+  "aliasChecking": "Comprobando…",
+  "aliasAvailable": "Disponible",
+  "aliasTaken": "Ese alias ya está en uso",
+  "passwordStrength": {
+    "veryWeak": "Muy débil",
+    "weak": "Débil",
+    "fair": "Aceptable",
+    "strong": "Fuerte · 10+ caracteres, número, símbolo",
+    "veryStrong": "Muy fuerte"
+  },
+  "acceptTermsPrefix": "Acepto los",
+  "acceptTermsJoiner": "y la",
   "validation": {
     "emailRequired": "Introduce tu email",
     "emailInvalid": "Introduce un email válido",
-    "passwordRequired": "Introduce tu contraseña"
+    "passwordRequired": "Introduce tu contraseña",
+    "aliasRequired": "Elige un alias",
+    "aliasTooShort": "Mínimo 3 caracteres",
+    "aliasTooLong": "Máximo 20 caracteres",
+    "aliasInvalidChars": "Solo letras, números, punto y guion bajo",
+    "passwordTooShort": "Mínimo 8 caracteres",
+    "termsRequired": "Debes aceptar los términos"
   }
 }

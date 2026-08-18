@@ -77,8 +77,8 @@ export const router = createBrowserRouter([
                 element: <Placeholder title="Detalle de gasto" />,
               },
               {
-                path: "notifications",
-                element: <Placeholder title="Notificaciones" />,
+                path: "activity",
+                element: <Placeholder title="Actividad" />,
               },
               {
                 path: "profile",

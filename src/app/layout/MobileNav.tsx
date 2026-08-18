@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 
-import { useUnreadCount } from "@/features/dashboard/api/use-unread-count";
 import { cn } from "@/shared/lib/cn";
 
 const TAB_BASE = cn(
@@ -13,7 +12,6 @@ const TAB_ACTIVE = "text-brand-default font-semibold";
 
 export function MobileNav() {
   const { t } = useTranslation();
-  const { data: unreadCount } = useUnreadCount();
 
   return (
     <nav className="flex border-t border-border-divider bg-surface-card lg:hidden">
@@ -46,12 +44,12 @@ export function MobileNav() {
         )}
       </NavLink>
 
-      <NavLink to="/app/notifications" className={({ isActive }) => cn(TAB_BASE, isActive && TAB_ACTIVE)}>
+      <NavLink to="/app/activity" className={({ isActive }) => cn(TAB_BASE, isActive && TAB_ACTIVE)}>
         {({ isActive }) => (
           <>
             <div
               className={cn(
-                "relative flex h-[32px] w-[64px] items-center justify-center rounded-pill",
+                "flex h-[32px] w-[64px] items-center justify-center rounded-pill",
                 isActive && "bg-brand-subtle",
               )}
             >
@@ -65,14 +63,10 @@ export function MobileNav() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 01-3.46 0" />
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
               </svg>
-              {!!unreadCount && unreadCount > 0 && (
-                <div className="absolute right-[14px] top-[2px] h-[8px] w-[8px] rounded-pill border-2 border-surface-card bg-brand-default" />
-              )}
             </div>
-            <span className="text-[11px]">{t("nav.notifications")}</span>
+            <span className="text-[11px]">{t("nav.activity")}</span>
           </>
         )}
       </NavLink>

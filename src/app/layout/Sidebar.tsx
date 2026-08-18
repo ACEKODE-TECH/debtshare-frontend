@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useNavigate } from "react-router";
 
-import { useUnreadCount } from "@/features/dashboard/api/use-unread-count";
 import { useGroups } from "@/features/groups/api/use-groups";
 import { useActiveGroupStore } from "@/features/groups/stores/active-group-store";
 import { useAuthStore } from "@/features/auth/stores/auth-store";
@@ -35,7 +34,6 @@ export function Sidebar() {
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const { data: groups } = useGroups();
-  const { data: unreadCount } = useUnreadCount();
   const { activeGroupId, setActiveGroup } = useActiveGroupStore();
 
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -222,10 +220,7 @@ export function Sidebar() {
             {t("nav.groups")}
           </NavLink>
 
-          <NavLink
-            to="/app/notifications"
-            className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}
-          >
+          <NavLink to="/app/activity" className={({ isActive }) => cn(NAV_ITEM, isActive && NAV_ITEM_ACTIVE)}>
             <svg
               width={17}
               height={17}
@@ -236,15 +231,9 @@ export function Sidebar() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 01-3.46 0" />
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
             </svg>
-            {t("nav.notifications")}
-            {!!unreadCount && unreadCount > 0 && (
-              <span className="ml-auto rounded-pill bg-brand-subtle px-[7px] py-[2px] text-[10px] font-bold text-brand-default">
-                {unreadCount}
-              </span>
-            )}
+            {t("nav.activity")}
           </NavLink>
         </nav>
       </div>

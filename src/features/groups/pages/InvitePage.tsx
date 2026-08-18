@@ -6,10 +6,10 @@ import { useAuthStore } from "@/features/auth/stores/auth-store";
 import { ENDPOINTS } from "@/lib/endpoints";
 import { api } from "@/shared/lib/api";
 import { ApiError } from "@/shared/lib/api";
-import type { Group, Invitation } from "@/types";
+import type { Group, GroupInvitation } from "@/types";
 
 interface InviteResolveResponse {
-  invitation: Invitation;
+  invitation: GroupInvitation;
   group: Group | null;
 }
 

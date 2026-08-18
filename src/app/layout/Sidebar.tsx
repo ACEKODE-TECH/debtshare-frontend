@@ -89,7 +89,7 @@ export function Sidebar() {
       </div>
 
       {/* Group switcher */}
-      <div className="px-lg pb-lg" ref={switcherRef}>
+      <div className="relative px-lg pb-lg" ref={switcherRef}>
         <button
           type="button"
           onClick={() => setSwitcherOpen((v) => !v)}
@@ -131,7 +131,7 @@ export function Sidebar() {
 
         {/* Dropdown */}
         {switcherOpen && groups && groups.length > 0 && (
-          <div className="mt-xs rounded-[10px] border border-border-strong bg-surface-card p-xs shadow-lg">
+          <div className="absolute left-lg right-lg z-10 mt-xs rounded-[10px] border border-border-strong bg-surface-card p-xs shadow-lg">
             {groups.map((group) => (
               <button
                 key={group.id}

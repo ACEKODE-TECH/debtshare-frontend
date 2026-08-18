@@ -21,6 +21,13 @@ export const router = createBrowserRouter([
                 Component: m.LoginPage,
               })),
           },
+          {
+            path: "register",
+            lazy: () =>
+              import("@/features/auth/pages/RegisterPage").then((m) => ({
+                Component: m.RegisterPage,
+              })),
+          },
         ],
       },
 

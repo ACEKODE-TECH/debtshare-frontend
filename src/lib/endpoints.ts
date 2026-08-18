@@ -13,6 +13,7 @@ export const ENDPOINTS = {
   ME: "/me",
 
   // Users
+  CHECK_ALIAS: (alias: string) => `/users/check-alias/${alias}`,
   USERS: "/users",
   USER: (id: string) => `/users/${id}`,
   USER_BY_ALIAS: (alias: string) => `/users/alias/${alias}`,

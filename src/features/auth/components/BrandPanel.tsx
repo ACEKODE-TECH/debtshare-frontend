@@ -1,8 +1,12 @@
 import { useTranslation } from "react-i18next";
 
-import { StarIcon } from "./icons";
+import { MailIcon, ShieldIcon, StarIcon, UserIcon } from "./icons";
 
-export function BrandPanel() {
+interface BrandPanelProps {
+  variant?: "login" | "register";
+}
+
+export function BrandPanel({ variant = "login" }: BrandPanelProps) {
   const { t } = useTranslation("auth");
 
   return (
@@ -31,43 +35,85 @@ export function BrandPanel() {
       </div>
 
       <div className="relative z-[1] mt-auto">
-        <h1 className="mb-xl text-display-lg font-extrabold leading-[1.05] tracking-[-1.4px]">
-          {t("tagline", { ns: "common" })}
-        </h1>
-        <p className="mb-[36px] max-w-[380px] text-xl leading-[1.55] text-brand-overlay-text-strong">
-          {t("taglineDescription", { ns: "common" })}
-        </p>
-
-        <div className="max-w-[380px] rounded-xl border border-brand-overlay-strong bg-brand-overlay-light p-lg-plus backdrop-blur-[20px]">
-          <div className="mb-sm-plus flex gap-[1px]">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <StarIcon key={i} />
-            ))}
-          </div>
-          <p className="mb-md text-[13.5px] leading-[1.5] text-brand-overlay-text-emphasis">
-            {t("login.testimonial")}
-          </p>
-          <div className="flex items-center gap-sm-plus">
-            <div className="h-[28px] w-[28px] rounded-pill bg-brand-overlay-bold border-2 border-brand-overlay-bolder" />
-            <span className="text-md-plus font-semibold">{t("login.testimonialAuthor")}</span>
-          </div>
-        </div>
-
-        <div className="mt-3xl flex gap-xl-plus text-md-plus text-brand-overlay-text">
-          <div>
-            <span className="text-display-xs font-extrabold tracking-[-0.4px] text-text-on-brand">
-              {t("login.statGroupsValue")}
-            </span>{" "}
-            {t("login.statGroups")}
-          </div>
-          <div>
-            <span className="text-display-xs font-extrabold tracking-[-0.4px] text-text-on-brand">
-              {t("login.statRatingValue")}
-            </span>{" "}
-            {t("login.statRating")}
-          </div>
-        </div>
+        {variant === "login" ? <LoginContent /> : <RegisterContent />}
       </div>
     </div>
+  );
+}
+
+function LoginContent() {
+  const { t } = useTranslation("auth");
+
+  return (
+    <>
+      <h1 className="mb-xl text-display-lg font-extrabold leading-[1.05] tracking-[-1.4px]">
+        {t("tagline", { ns: "common" })}
+      </h1>
+      <p className="mb-[36px] max-w-[380px] text-xl leading-[1.55] text-brand-overlay-text-strong">
+        {t("taglineDescription", { ns: "common" })}
+      </p>
+
+      <div className="max-w-[380px] rounded-xl border border-brand-overlay-strong bg-brand-overlay-light p-lg-plus backdrop-blur-[20px]">
+        <div className="mb-sm-plus flex gap-[1px]">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <StarIcon key={i} />
+          ))}
+        </div>
+        <p className="mb-md text-[13.5px] leading-[1.5] text-brand-overlay-text-emphasis">
+          {t("login.testimonial")}
+        </p>
+        <div className="flex items-center gap-sm-plus">
+          <div className="h-[28px] w-[28px] rounded-pill bg-brand-overlay-bold border-2 border-brand-overlay-bolder" />
+          <span className="text-md-plus font-semibold">{t("login.testimonialAuthor")}</span>
+        </div>
+      </div>
+
+      <div className="mt-3xl flex gap-xl-plus text-md-plus text-brand-overlay-text">
+        <div>
+          <span className="text-display-xs font-extrabold tracking-[-0.4px] text-text-on-brand">
+            {t("login.statGroupsValue")}
+          </span>{" "}
+          {t("login.statGroups")}
+        </div>
+        <div>
+          <span className="text-display-xs font-extrabold tracking-[-0.4px] text-text-on-brand">
+            {t("login.statRatingValue")}
+          </span>{" "}
+          {t("login.statRating")}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function RegisterContent() {
+  const { t } = useTranslation("auth");
+
+  const features = [
+    { icon: <UserIcon className="text-text-on-brand" />, text: t("register.featureAlias") },
+    { icon: <MailIcon className="text-text-on-brand" />, text: t("register.featureEmail") },
+    { icon: <ShieldIcon className="text-text-on-brand" />, text: t("register.featureSecurity") },
+  ];
+
+  return (
+    <>
+      <h1 className="mb-xl text-display-lg font-extrabold leading-[1.05] tracking-[-1.4px] whitespace-pre-line">
+        {t("register.brandTagline")}
+      </h1>
+      <p className="mb-[36px] max-w-[380px] text-xl leading-[1.55] text-brand-overlay-text-strong">
+        {t("register.brandDescription")}
+      </p>
+
+      <div className="flex max-w-[380px] flex-col gap-md-plus">
+        {features.map((feature) => (
+          <div key={feature.text} className="flex items-center gap-md">
+            <div className="flex h-[32px] w-[32px] flex-shrink-0 items-center justify-center rounded-[10px] bg-brand-overlay-light">
+              {feature.icon}
+            </div>
+            <span className="text-lg leading-[1.45]">{feature.text}</span>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

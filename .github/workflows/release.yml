@@ -41,7 +41,7 @@ jobs:
       - run: npm ci
 
       - name: Create release PR or tag release
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
           title: "chore(release): version packages"
           commit: "chore(release): version packages"

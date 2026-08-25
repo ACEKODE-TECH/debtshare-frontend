@@ -28,7 +28,13 @@ export const groupHandlers = [
         );
         const myPaid = groupExpenses.filter((e) => e.paidBy === myId).reduce((a, e) => a + e.amount, 0);
         const myOwed = mySplits.reduce((a, s) => a + s.amount, 0);
-        const balance = Math.round((myPaid - myOwed) * 100) / 100;
+        const settlements = db.settlements.filter((s) => s.groupId === g.id && s.status === "completed");
+        const settlementDelta = settlements.reduce((acc, s) => {
+          if (s.fromUserId === myId) return acc + s.amount;
+          if (s.toUserId === myId) return acc - s.amount;
+          return acc;
+        }, 0);
+        const balance = Math.round((myPaid - myOwed + settlementDelta) * 100) / 100;
 
         const lastExpense = groupExpenses.reduce<string | null>(
           (latest, e) => (!latest || e.date > latest ? e.date : latest),

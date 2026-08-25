@@ -1,4 +1,5 @@
 import type { CurrencyCode, ID } from "./common";
+import type { User } from "./user";
 
 /**
  * A user's net position within a group, derived from expenses/splits
@@ -10,6 +11,10 @@ export interface Balance {
   userId: ID;
   amount: number;
   currency: CurrencyCode;
+}
+
+export interface BalanceWithUser extends Balance {
+  user: Pick<User, "id" | "name" | "avatarUrl"> | null;
 }
 
 /** One leg of a group's net balances resolved into pairwise transfers, i.e. "who pays whom". */

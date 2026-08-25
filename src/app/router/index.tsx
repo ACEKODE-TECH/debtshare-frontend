@@ -69,7 +69,10 @@ export const router = createBrowserRouter([
               },
               {
                 path: "groups/:groupId",
-                element: <Placeholder title="Grupo" />,
+                lazy: () =>
+                  import("@/features/groups/pages/GroupDetailPage").then((m) => ({
+                    Component: m.GroupDetailPage,
+                  })),
               },
               {
                 path: "groups/:groupId/dashboard",

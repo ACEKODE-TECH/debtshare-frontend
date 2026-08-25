@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 
-import type { Balance, DebtEdge } from "@/types";
+import type { Balance, BalanceWithUser, DebtEdge } from "@/types";
 
 import { getDb } from "../db";
 import { errorResponse, randomDelayMs, shouldSimulateError } from "../utils";
@@ -65,11 +65,20 @@ function simplifyDebts(balances: Balance[]): DebtEdge[] {
 }
 
 export const balanceHandlers = [
-  // GET /groups/:groupId/balances
+  // GET /groups/:groupId/balances — each row includes the hydrated user for the UI
   http.get("/api/groups/:groupId/balances", async ({ params }) => {
     await randomDelayMs();
     if (shouldSimulateError()) return errorResponse();
-    return HttpResponse.json(computeGroupBalances(String(params.groupId)));
+    const db = getDb();
+    const balances = computeGroupBalances(String(params.groupId));
+    const rows: BalanceWithUser[] = balances.map((b) => {
+      const u = db.users.find((user) => user.id === b.userId);
+      return {
+        ...b,
+        user: u ? { id: u.id, name: u.name, avatarUrl: u.avatarUrl } : null,
+      };
+    });
+    return HttpResponse.json(rows);
   }),
 
   // GET /groups/:groupId/debts

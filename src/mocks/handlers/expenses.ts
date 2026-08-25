@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 
-import type { Expense } from "@/types";
+import type { Expense, ExpenseListItem } from "@/types";
 
 import { getDb } from "../db";
 import { createEqualSplits, createExpense, createNotification } from "../factories";
@@ -8,6 +8,7 @@ import { cursorPaginate, errorResponse, randomDelayMs, shouldSimulateError } fro
 
 export const expenseHandlers = [
   // GET /groups/:groupId/expenses — cursor-paginated, newest first
+  // Rows are enriched with paidByUser + the current user's share for feed rendering.
   http.get("/api/groups/:groupId/expenses", async ({ request, params }) => {
     await randomDelayMs();
     if (shouldSimulateError()) return errorResponse();
@@ -18,6 +19,7 @@ export const expenseHandlers = [
     const categoryId = url.searchParams.get("categoryId");
 
     const db = getDb();
+    const myId = db.users[0].id;
     let groupExpenses = db.expenses
       .filter((e) => e.groupId === params.groupId)
       .sort((a, b) => b.date.localeCompare(a.date));
@@ -26,7 +28,27 @@ export const expenseHandlers = [
       groupExpenses = groupExpenses.filter((e) => e.categoryId === categoryId);
     }
 
-    return HttpResponse.json(cursorPaginate(groupExpenses, cursor, limit));
+    const page = cursorPaginate(groupExpenses, cursor, limit);
+    const items: ExpenseListItem[] = page.items.map((e) => {
+      const paidByUser = db.users.find((u) => u.id === e.paidBy);
+      const splits = db.expenseSplits.filter((s) => s.expenseId === e.id);
+      const mySplit = splits.find((s) => s.userId === myId);
+      const participants = splits
+        .map((s) => db.users.find((u) => u.id === s.userId))
+        .filter((u): u is NonNullable<typeof u> => u !== undefined)
+        .map((u) => ({ id: u.id, name: u.name, avatarUrl: u.avatarUrl }));
+      return {
+        ...e,
+        paidByUser: paidByUser
+          ? { id: paidByUser.id, name: paidByUser.name, avatarUrl: paidByUser.avatarUrl }
+          : { id: e.paidBy, name: "—", avatarUrl: null },
+        myShare: mySplit?.amount ?? 0,
+        splitCount: splits.length,
+        participants,
+      };
+    });
+
+    return HttpResponse.json({ ...page, items });
   }),
 
   // GET /expenses/:id — includes splits

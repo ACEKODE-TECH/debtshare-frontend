@@ -291,6 +291,12 @@ Devuelve el gasto con sus splits embebidos.
 }
 ```
 
+Cada elemento del array `items` se enriquece con:
+
+- `paidByUser`: `{ id, name, avatarUrl }` — para pintar el avatar y el "Pagó X" sin lookup adicional.
+- `myShare`: cantidad que le toca al usuario actual (0 si no participa en el split).
+- `splitCount`: número total de personas entre las que se ha repartido el gasto.
+
 ### `POST /api/groups/:groupId/expenses`
 
 Crea un gasto, genera splits automaticamente (equal) y notificaciones para el resto de miembros del grupo.

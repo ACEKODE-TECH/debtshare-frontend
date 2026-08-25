@@ -183,9 +183,21 @@ export type AvatarGroupProps = {
   max?: number;
   size?: AvatarSize;
   className?: string;
+  /**
+   * Border color that separates overlapping avatars. Should match the background
+   * behind the group so the border disappears visually. Defaults to `border-surface-card`
+   * (works for card contexts); pass `border-surface-bg` when the group sits on the app bg.
+   */
+  borderClassName?: string;
 };
 
-export function AvatarGroup({ children, max = 3, size = "md", className }: AvatarGroupProps) {
+export function AvatarGroup({
+  children,
+  max = 3,
+  size = "md",
+  className,
+  borderClassName = "border-surface-card",
+}: AvatarGroupProps) {
   const items = Children.toArray(children);
   const visible = items.slice(0, max);
   const overflow = items.length - max;
@@ -209,7 +221,7 @@ export function AvatarGroup({ children, max = 3, size = "md", className }: Avata
   return (
     <div className={cn("flex items-center", className)} role="group" aria-label="Participantes">
       {visible.map((child, i) => (
-        <div key={i} className={cn("rounded-pill border-2 border-surface-bg", i > 0 && OVERLAP[size])}>
+        <div key={i} className={cn("rounded-pill border-2", borderClassName, i > 0 && OVERLAP[size])}>
           {child}
         </div>
       ))}
@@ -217,7 +229,8 @@ export function AvatarGroup({ children, max = 3, size = "md", className }: Avata
         <div
           className={cn(
             "flex items-center justify-center rounded-pill",
-            "border-2 border-surface-bg",
+            "border-2",
+            borderClassName,
             "bg-surface-subtle font-sans text-sm font-extrabold text-text-secondary",
             SIZES[size],
             OVERLAP[size],

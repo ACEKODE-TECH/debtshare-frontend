@@ -70,6 +70,7 @@
     "navigation": "NAVEGACIÓN",
     "groups": "GRUPOS",
     "actions": "ACCIONES",
+    "newGroup": "Nuevo grupo",
     "newExpense": "Nuevo gasto",
     "switchDark": "Cambiar a modo oscuro",
     "switchLight": "Cambiar a modo claro"

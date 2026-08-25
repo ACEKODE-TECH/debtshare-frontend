@@ -8,6 +8,8 @@ import { useAuthStore } from "@/features/auth/stores/auth-store";
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import { cn } from "@/shared/lib/cn";
 
+const IS_MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
+
 const GROUP_ICON_MAP: Record<string, string> = {
   flight: "✈️",
   home: "🏠",
@@ -171,7 +173,11 @@ export function Sidebar() {
 
       {/* Search */}
       <div className="px-lg pb-lg">
-        <div className="flex items-center gap-sm-plus rounded-[9px] border border-border-strong bg-surface-subtle px-md py-sm-plus">
+        <button
+          type="button"
+          onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+          className="flex w-full items-center gap-sm-plus rounded-[9px] border border-border-strong bg-surface-subtle px-md py-sm-plus transition-colors duration-150 hover:border-border-stronger hover:bg-surface-hover"
+        >
           <svg
             width={14}
             height={14}
@@ -187,9 +193,9 @@ export function Sidebar() {
           </svg>
           <span className="text-[12.5px] text-text-muted">{t("nav.search")}</span>
           <span className="ml-auto rounded-[4px] border border-border-strong bg-surface-card px-[5px] py-[2px] font-mono text-[10.5px] text-text-muted">
-            ⌘K
+            {IS_MAC ? "⌘K" : "Ctrl+K"}
           </span>
-        </div>
+        </button>
       </div>
 
       {/* Nav */}
@@ -200,7 +206,6 @@ export function Sidebar() {
         <nav className="flex flex-col gap-2xs">
           <NavLink
             to="/app/groups"
-            end
             className={({ isActive }) => cn(NAV_ITEM, isActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE)}
           >
             <svg

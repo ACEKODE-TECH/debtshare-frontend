@@ -64,6 +64,16 @@
     "decline": "No, gracias",
     "joining": "Uniéndose…"
   },
+  "commandPalette": {
+    "placeholder": "Buscar o ejecutar una acción…",
+    "noResults": "Sin resultados",
+    "navigation": "NAVEGACIÓN",
+    "groups": "GRUPOS",
+    "actions": "ACCIONES",
+    "newExpense": "Nuevo gasto",
+    "switchDark": "Cambiar a modo oscuro",
+    "switchLight": "Cambiar a modo claro"
+  },
   "validation": {
     "emailRequired": "Introduce tu email",
     "emailInvalid": "Introduce un email válido",

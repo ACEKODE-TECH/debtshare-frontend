@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -112,6 +112,44 @@ function computeGlobalBalance(groups: GroupSummary[]): { total: number; currency
   return { total: Math.round(firstTotal * 100) / 100, currency: firstCurrency };
 }
 
+type StatusFilter = "all" | "active" | "settled";
+
+function FilterChip({
+  active,
+  onClick,
+  count,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  count: number;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex items-center gap-xs rounded-lg border px-md py-sm text-[12.5px] font-semibold transition-all duration-150",
+        active
+          ? "border-transparent bg-text-primary text-surface-card"
+          : "border-border-strong bg-surface-card text-text-secondary hover:border-border-stronger hover:text-text-primary",
+      )}
+    >
+      {children}
+      <span
+        className={cn(
+          "rounded-md px-xs text-[10.5px] font-bold tabular-nums",
+          active ? "bg-surface-card/25 text-surface-card" : "bg-surface-subtle text-text-muted",
+        )}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
 export function GroupsPage() {
   const { t } = useTranslation("groups");
   const navigate = useNavigate();
@@ -121,6 +159,7 @@ export function GroupsPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   // Opens the modal when arriving with `?action=new-group` (fresh or already on the page,
   // e.g. from the command palette). Consumes the param so a reload doesn't reopen it.
@@ -142,11 +181,21 @@ export function GroupsPage() {
   const filteredGroups = useMemo(() => {
     if (!groups) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return groups;
-    return groups.filter((g) => g.name.toLowerCase().includes(q));
-  }, [groups, query]);
+    return groups.filter((g) => {
+      if (q && !g.name.toLowerCase().includes(q)) return false;
+      if (statusFilter === "active" && g.status !== "active") return false;
+      if (statusFilter === "settled" && g.status !== "settled") return false;
+      return true;
+    });
+  }, [groups, query, statusFilter]);
 
-  const activeCount = groups?.filter((g) => g.status === "active").length ?? 0;
+  const counts = useMemo(() => {
+    const total = groups?.length ?? 0;
+    const active = groups?.filter((g) => g.status === "active").length ?? 0;
+    const settled = groups?.filter((g) => g.status === "settled").length ?? 0;
+    return { total, active, settled };
+  }, [groups]);
+
   const global = groups ? computeGlobalBalance(groups) : { total: 0, currency: null };
 
   return (
@@ -160,7 +209,7 @@ export function GroupsPage() {
           <p className="mt-2xs text-md text-text-tertiary">
             {groups && groups.length > 0
               ? t("listing.subtitleWithStats", {
-                  count: activeCount,
+                  count: counts.active,
                   balance:
                     global.currency !== null
                       ? formatAmount(global.total, global.currency, { withSign: true })
@@ -207,6 +256,33 @@ export function GroupsPage() {
           </button>
         </div>
       </header>
+
+      {/* Status filter chips */}
+      {!isPending && !isError && groups && groups.length > 0 && (
+        <div className="flex flex-wrap gap-xs" role="group" aria-label={t("listing.filter.aria")}>
+          <FilterChip
+            active={statusFilter === "all"}
+            onClick={() => setStatusFilter("all")}
+            count={counts.total}
+          >
+            {t("listing.filter.all")}
+          </FilterChip>
+          <FilterChip
+            active={statusFilter === "active"}
+            onClick={() => setStatusFilter("active")}
+            count={counts.active}
+          >
+            {t("listing.filter.active")}
+          </FilterChip>
+          <FilterChip
+            active={statusFilter === "settled"}
+            onClick={() => setStatusFilter("settled")}
+            count={counts.settled}
+          >
+            {t("listing.filter.settled")}
+          </FilterChip>
+        </div>
+      )}
 
       {/* Content */}
       {isPending && (
@@ -268,17 +344,23 @@ export function GroupsPage() {
         </div>
       )}
 
-      {!isPending && !isError && groups && groups.length > 0 && (
+      {!isPending && !isError && groups && groups.length > 0 && filteredGroups.length > 0 && (
         <div className={cn("grid gap-md", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
           {filteredGroups.map((group) => (
             <GroupCard key={group.id} group={group} onOpen={() => setActiveGroup(group.id)} />
           ))}
-          {query.trim() === "" && <CreateGroupCard onClick={() => setModalOpen(true)} />}
+          {query.trim() === "" && statusFilter === "all" && (
+            <CreateGroupCard onClick={() => setModalOpen(true)} />
+          )}
         </div>
       )}
 
       {!isPending && !isError && groups && groups.length > 0 && filteredGroups.length === 0 && (
-        <p className="px-lg text-center text-md text-text-tertiary">{t("listing.noResults", { query })}</p>
+        <p className="px-lg py-xl text-center text-md text-text-tertiary">
+          {query.trim() !== ""
+            ? t("listing.noResults", { query })
+            : t(`listing.noResultsFilter.${statusFilter}`)}
+        </p>
       )}
 
       <CreateGroupModal open={modalOpen} onOpenChange={setModalOpen} onCreated={handleCreated} />

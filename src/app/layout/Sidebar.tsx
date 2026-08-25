@@ -1,27 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useNavigate } from "react-router";
 
-import { useGroups } from "@/features/groups/api/use-groups";
-import { useActiveGroupStore } from "@/features/groups/stores/active-group-store";
 import { useAuthStore } from "@/features/auth/stores/auth-store";
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
 import { cn } from "@/shared/lib/cn";
 
 const IS_MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
-
-const GROUP_ICON_MAP: Record<string, string> = {
-  flight: "✈️",
-  home: "🏠",
-  food: "🍽️",
-  party: "🎉",
-  sports: "⚽",
-  default: "👥",
-};
-
-function getGroupEmoji(icon: string): string {
-  return GROUP_ICON_MAP[icon] || GROUP_ICON_MAP.default;
-}
 
 const NAV_ITEM =
   "flex items-center gap-[11px] rounded-lg px-md py-sm-plus text-[13.5px] font-medium text-text-secondary transition-colors duration-150";
@@ -35,29 +20,6 @@ export function Sidebar() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clearAuth);
-  const { data: groups } = useGroups();
-  const { activeGroupId, setActiveGroup } = useActiveGroupStore();
-
-  const [switcherOpen, setSwitcherOpen] = useState(false);
-  const switcherRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (groups?.length && !activeGroupId) {
-      setActiveGroup(groups[0].id);
-    }
-  }, [groups, activeGroupId, setActiveGroup]);
-
-  const activeGroup = groups?.find((g) => g.id === activeGroupId);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
-        setSwitcherOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleLogout = useCallback(() => {
     clearAuth();
@@ -88,91 +50,8 @@ export function Sidebar() {
         </span>
       </div>
 
-      {/* Group switcher */}
-      <div className="relative px-lg pb-lg" ref={switcherRef}>
-        <button
-          type="button"
-          onClick={() => setSwitcherOpen((v) => !v)}
-          className={cn(
-            "flex w-full items-center gap-sm-plus rounded-[10px] border px-md py-sm-plus transition-all duration-200",
-            switcherOpen
-              ? "border-brand-default bg-brand-subtle shadow-[0_0_0_3px_var(--color-brand-primary-tint-alt)]"
-              : "border-border-strong bg-surface-subtle hover:border-border-stronger",
-          )}
-        >
-          {activeGroup ? (
-            <>
-              <span className="flex h-[28px] w-[28px] flex-none items-center justify-center rounded-lg bg-surface-bg text-sm">
-                {getGroupEmoji(activeGroup.icon)}
-              </span>
-              <div className="flex-1 text-left">
-                <div className="truncate text-[13px] font-semibold text-text-primary">{activeGroup.name}</div>
-              </div>
-              <svg
-                width={12}
-                height={12}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                className={cn(
-                  "flex-none text-text-muted transition-transform duration-200",
-                  switcherOpen && "rotate-180",
-                )}
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </>
-          ) : (
-            <span className="text-[13px] text-text-muted">{t("nav.noGroups")}</span>
-          )}
-        </button>
-
-        {/* Dropdown */}
-        {switcherOpen && groups && groups.length > 0 && (
-          <div className="absolute left-lg right-lg z-10 mt-xs rounded-[10px] border border-border-strong bg-surface-card p-xs shadow-lg">
-            {groups.map((group) => (
-              <button
-                key={group.id}
-                type="button"
-                onClick={() => {
-                  setActiveGroup(group.id);
-                  setSwitcherOpen(false);
-                }}
-                className={cn(
-                  "flex w-full items-center gap-sm-plus rounded-lg px-sm-plus py-sm text-left transition-colors duration-150",
-                  group.id === activeGroupId
-                    ? "bg-brand-subtle text-brand-on-subtle"
-                    : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
-                )}
-              >
-                <span className="flex h-[24px] w-[24px] flex-none items-center justify-center rounded-md bg-surface-bg text-xs">
-                  {getGroupEmoji(group.icon)}
-                </span>
-                <span className="truncate text-[13px] font-medium">{group.name}</span>
-                {group.id === activeGroupId && (
-                  <svg
-                    width={14}
-                    height={14}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.6"
-                    strokeLinecap="round"
-                    className="ml-auto flex-none"
-                  >
-                    <path d="M20 6L9 17l-5-5" />
-                  </svg>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Search */}
-      <div className="px-lg pb-lg">
+      {/* Search — opens command palette */}
+      <div className="px-lg pb-lg pt-md">
         <button
           type="button"
           onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}

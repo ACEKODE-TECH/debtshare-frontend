@@ -19,5 +19,8 @@ export type { ExpenseCardProps, ExpenseCategory, ExpenseCardVariant } from "./Ex
 export { Input } from "./Input";
 export type { InputProps } from "./Input";
 
+export { Modal } from "./Modal";
+export type { ModalProps, ModalSize } from "./Modal";
+
 export { Tabs } from "./Tabs";
 export type { TabsProps, TabItem, TabsVariant } from "./Tabs";

@@ -1,14 +1,14 @@
 import { http, HttpResponse } from "msw";
 
 import { ENDPOINTS } from "@/lib/endpoints";
-import type { Group, GroupMember } from "@/types";
+import type { Group, GroupMember, GroupSummary } from "@/types";
 
 import { getDb } from "../db";
 import { createGroup, createGroupMember } from "../factories";
 import { errorResponse, randomDelayMs, shouldSimulateError } from "../utils";
 
 export const groupHandlers = [
-  // GET /groups — groups where the current user is a member
+  // GET /groups — groups where the current user is a member (with counts)
   http.get(`/api${ENDPOINTS.GROUPS}`, async () => {
     await randomDelayMs();
     if (shouldSimulateError()) return errorResponse();
@@ -16,7 +16,65 @@ export const groupHandlers = [
     const db = getDb();
     const myId = db.users[0].id;
     const myGroupIds = new Set(db.groupMembers.filter((m) => m.userId === myId).map((m) => m.groupId));
-    return HttpResponse.json(db.groups.filter((g) => myGroupIds.has(g.id)));
+
+    const summaries: GroupSummary[] = db.groups
+      .filter((g) => myGroupIds.has(g.id))
+      .map((g) => {
+        const groupMembers = db.groupMembers.filter((m) => m.groupId === g.id);
+        const memberIds = new Set(groupMembers.map((m) => m.userId));
+        const groupExpenses = db.expenses.filter((e) => e.groupId === g.id);
+        const mySplits = db.expenseSplits.filter(
+          (s) => s.userId === myId && groupExpenses.some((e) => e.id === s.expenseId),
+        );
+        const myPaid = groupExpenses.filter((e) => e.paidBy === myId).reduce((a, e) => a + e.amount, 0);
+        const myOwed = mySplits.reduce((a, s) => a + s.amount, 0);
+        const balance = Math.round((myPaid - myOwed) * 100) / 100;
+
+        const lastExpense = groupExpenses.reduce<string | null>(
+          (latest, e) => (!latest || e.date > latest ? e.date : latest),
+          null,
+        );
+        const lastSettlement = db.settlements
+          .filter((s) => s.groupId === g.id && s.status === "completed" && s.settledAt)
+          .reduce<string | null>(
+            (latest, s) => (!latest || (s.settledAt as string) > latest ? s.settledAt : latest),
+            null,
+          );
+        const lastActivityAt =
+          lastExpense && lastSettlement
+            ? lastExpense > lastSettlement
+              ? lastExpense
+              : lastSettlement
+            : (lastExpense ?? lastSettlement);
+
+        // "settled" = no expenses OR everyone is at zero (all splits equal their paid share)
+        const status: GroupSummary["status"] =
+          balance === 0 && groupExpenses.length > 0 ? "settled" : "active";
+
+        // Members preview: me first, then others (up to 4 total)
+        const orderedMembers = [
+          ...groupMembers.filter((m) => m.userId === myId),
+          ...groupMembers.filter((m) => m.userId !== myId),
+        ];
+        const memberPreview = orderedMembers
+          .slice(0, 4)
+          .map((m) => db.users.find((u) => u.id === m.userId))
+          .filter((u): u is NonNullable<typeof u> => u !== undefined)
+          .map((u) => ({ id: u.id, name: u.name, avatarUrl: u.avatarUrl }));
+
+        return {
+          ...g,
+          memberCount: memberIds.size,
+          expenseCount: groupExpenses.length,
+          totalExpenses: Math.round(groupExpenses.reduce((a, e) => a + e.amount, 0) * 100) / 100,
+          myBalance: balance,
+          status,
+          lastActivityAt,
+          memberPreview,
+        };
+      });
+
+    return HttpResponse.json(summaries);
   }),
 
   // GET /groups/:id

@@ -1,0 +1,63 @@
+{
+  "listing": {
+    "title": "Mis grupos",
+    "subtitle": "Empieza a compartir gastos con quien quieras.",
+    "subtitleWithStats_one": "{{count}} activo · balance global {{balance}}",
+    "subtitleWithStats_other": "{{count}} activos · balance global {{balance}}",
+    "newGroup": "Nuevo grupo",
+    "searchPlaceholder": "Buscar grupo…",
+    "memberCount_one": "{{count}} miembro",
+    "memberCount_other": "{{count}} miembros",
+    "expenseCount_one": "{{count}} gasto",
+    "expenseCount_other": "{{count}} gastos",
+    "status": {
+      "active": "Activo",
+      "settled": "Liquidado"
+    },
+    "balance": {
+      "owedToMe": "Te deben",
+      "iOwe": "Debes",
+      "stateLabel": "Estado",
+      "settled": "Al día",
+      "zero": "En cero"
+    },
+    "createCard": {
+      "title": "Crear nuevo grupo",
+      "description": "Para un viaje, tu piso o cualquier plan compartido."
+    },
+    "noResults": "Ningún grupo coincide con «{{query}}».",
+    "empty": {
+      "title": "Todavía no tienes grupos",
+      "description": "Crea uno para tu piso, viaje o cena y empieza a dividir gastos con quien quieras.",
+      "action": "Crear grupo"
+    },
+    "error": {
+      "title": "No hemos podido cargar tus grupos",
+      "description": "Comprueba tu conexión o vuelve a intentarlo en unos segundos.",
+      "retry": "Reintentar"
+    }
+  },
+  "create": {
+    "title": "Nuevo grupo",
+    "description": "Ponle nombre y elige moneda base. Podrás invitar miembros después.",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Viaje a Lisboa, Piso Malasaña…",
+    "descriptionLabel": "Descripción (opcional)",
+    "descriptionPlaceholder": "Un contexto breve, si lo necesitas.",
+    "currencyLabel": "Moneda base",
+    "iconLabel": "Icono",
+    "submit": "Crear grupo",
+    "cancel": "Cancelar",
+    "serverError": "No hemos podido crear el grupo. Vuelve a intentarlo.",
+    "validation": {
+      "nameTooShort": "El nombre necesita al menos 2 caracteres",
+      "nameTooLong": "Máximo 50 caracteres",
+      "descriptionTooLong": "Máximo 140 caracteres"
+    }
+  },
+  "currency": {
+    "EUR": "Euro (€)",
+    "USD": "Dólar (US$)",
+    "GBP": "Libra (£)"
+  }
+}

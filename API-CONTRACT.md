@@ -104,9 +104,37 @@ Actualiza datos del usuario.
 
 ### `GET /api/groups`
 
-Grupos donde el usuario autenticado es miembro.
+Grupos donde el usuario autenticado es miembro. Cada elemento incluye contadores y estado agregado para pintar la vista de listado sin llamadas adicionales.
 
-**Response 200:** `Group[]`
+**Response 200:** `GroupSummary[]`
+
+```json
+[
+  {
+    "id": "group_6",
+    "name": "Viaje a Lisboa",
+    "description": "Puente de diciembre, del 4 al 7",
+    "currency": "EUR",
+    "icon": "flight",
+    "createdBy": "user_1",
+    "createdAt": "2026-06-14T09:12:00.000Z",
+    "memberCount": 3,
+    "expenseCount": 14,
+    "totalExpenses": 757.42,
+    "myBalance": 127.97,
+    "status": "active",
+    "lastActivityAt": "2026-08-24T18:32:00.000Z",
+    "memberPreview": [
+      { "id": "user_1", "name": "Marta Sanz", "avatarUrl": null },
+      { "id": "user_2", "name": "Diego Ferrer", "avatarUrl": "https://…" }
+    ]
+  }
+]
+```
+
+- `myBalance`: saldo del usuario en la moneda del grupo (positivo = le deben, negativo = debe).
+- `status`: `"active"` mientras haya cuentas por saldar; `"settled"` cuando todos están a cero.
+- `memberPreview`: primeros ≤ 4 miembros (el usuario actual primero) para el stack de avatares.
 
 ### `GET /api/groups/:id`
 

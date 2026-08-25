@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { Command } from "cmdk";
 
 import { useGroups } from "@/features/groups/api/use-groups";
+import { getGroupEmoji } from "@/features/groups/lib/group-icons";
 import { useActiveGroupStore } from "@/features/groups/stores/active-group-store";
 import { useThemeStore } from "@/shared/stores/theme-store";
 import { cn } from "@/shared/lib/cn";
@@ -115,6 +116,12 @@ export function CommandPalette() {
         {/* Actions */}
         <Command.Group heading={t("commandPalette.actions")} className={cn("mt-sm", GROUP_HEADING_STYLES)}>
           <CommandItem
+            onSelect={() => runAction(() => navigate("/app/groups?action=new-group"))}
+            icon={<PlusIcon />}
+          >
+            {t("commandPalette.newGroup")}
+          </CommandItem>
+          <CommandItem
             onSelect={() => runAction(() => navigate("/app/groups?action=new-expense"))}
             icon={<PlusIcon />}
           >
@@ -155,19 +162,6 @@ function CommandItem({
       {children}
     </Command.Item>
   );
-}
-
-const GROUP_ICON_MAP: Record<string, string> = {
-  flight: "✈️",
-  home: "🏠",
-  food: "🍽️",
-  party: "🎉",
-  sports: "⚽",
-  default: "👥",
-};
-
-function getGroupEmoji(icon: string): string {
-  return GROUP_ICON_MAP[icon] || GROUP_ICON_MAP.default;
 }
 
 function GroupsIcon() {

@@ -25,7 +25,18 @@
       "title": "Crear nuevo grupo",
       "description": "Para un viaje, tu piso o cualquier plan compartido."
     },
+    "filter": {
+      "aria": "Filtrar grupos por estado",
+      "all": "Todos",
+      "active": "Con actividad",
+      "settled": "Liquidados"
+    },
     "noResults": "Ningún grupo coincide con «{{query}}».",
+    "noResultsFilter": {
+      "all": "Ningún grupo coincide con el filtro.",
+      "active": "No tienes grupos con actividad pendiente ahora mismo.",
+      "settled": "Todavía no has liquidado ningún grupo."
+    },
     "empty": {
       "title": "Todavía no tienes grupos",
       "description": "Crea uno para tu piso, viaje o cena y empieza a dividir gastos con quien quieras.",

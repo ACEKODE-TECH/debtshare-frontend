@@ -17,8 +17,11 @@ export function CommandPalette() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: groups } = useGroups();
-  const { setActiveGroup } = useActiveGroupStore();
+  const { activeGroupId, setActiveGroup } = useActiveGroupStore();
   const { theme, toggle: toggleTheme } = useThemeStore();
+
+  // Prefer the active group; fall back to the first group we have.
+  const targetGroupId = activeGroupId ?? groups?.[0]?.id ?? null;
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -122,7 +125,15 @@ export function CommandPalette() {
             {t("commandPalette.newGroup")}
           </CommandItem>
           <CommandItem
-            onSelect={() => runAction(() => navigate("/app/groups?action=new-expense"))}
+            onSelect={() =>
+              runAction(() => {
+                if (targetGroupId) {
+                  navigate(`/app/groups/${targetGroupId}?action=new-expense`);
+                } else {
+                  navigate("/app/groups?action=new-group");
+                }
+              })
+            }
             icon={<PlusIcon />}
           >
             {t("commandPalette.newExpense")}

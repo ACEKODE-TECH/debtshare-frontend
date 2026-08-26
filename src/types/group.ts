@@ -38,3 +38,7 @@ export interface GroupMember {
   userId: ID;
   joinedAt: ISODateString;
 }
+
+export interface GroupMemberWithUser extends GroupMember {
+  user: User | null;
+}

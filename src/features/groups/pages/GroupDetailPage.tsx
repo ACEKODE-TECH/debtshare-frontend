@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 
 import { useAuthStore } from "@/features/auth/stores/auth-store";
 import { Avatar, AvatarGroup, Button, EmptyState } from "@/shared/components/ui";
@@ -16,6 +16,7 @@ import { CategorySummaryCard } from "../components/CategorySummaryCard";
 import { ExpenseFeed } from "../components/ExpenseFeed";
 import { FilterDropdown, type FilterOption } from "../components/FilterDropdown";
 import { GroupSwitcher } from "../components/GroupSwitcher";
+import { NewExpenseModal } from "../components/NewExpenseModal";
 import { getCategoryVisual } from "../lib/categories";
 import { useActiveGroupStore } from "../stores/active-group-store";
 
@@ -162,10 +163,12 @@ function GroupHeader({
   group,
   groups,
   memberSince,
+  onNewExpense,
 }: {
   group: GroupSummary;
   groups: GroupSummary[];
   memberSince: string;
+  onNewExpense: () => void;
 }) {
   const { t } = useTranslation("groups");
 
@@ -220,7 +223,7 @@ function GroupHeader({
         <Button intent="secondary" leftIcon={<InviteIcon />} disabled title={t("detail.inviteComingSoon")}>
           {t("detail.invite")}
         </Button>
-        <Button intent="primary" leftIcon={<PlusIcon />} disabled title={t("detail.newExpenseComingSoon")}>
+        <Button intent="primary" leftIcon={<PlusIcon />} onClick={onNewExpense}>
           {t("detail.newExpense")}
         </Button>
       </div>
@@ -309,6 +312,19 @@ export function GroupDetailPage() {
 
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [expenseModalOpen, setExpenseModalOpen] = useState(false);
+
+  // Support ?action=new-expense from the command palette
+  useEffect(() => {
+    if (searchParams.get("action") === "new-expense") {
+      const next = new URLSearchParams(searchParams);
+      next.delete("action");
+      setSearchParams(next, { replace: true });
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- state derived from URL param
+      setExpenseModalOpen(true);
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (groupId) setActiveGroup(groupId);
@@ -378,7 +394,14 @@ export function GroupDetailPage() {
       </Link>
 
       {groupsPending && <div className="h-[110px] w-full animate-pulse rounded-xl bg-surface-subtle" />}
-      {group && groups && <GroupHeader group={group} groups={groups} memberSince={memberSince} />}
+      {group && groups && (
+        <GroupHeader
+          group={group}
+          groups={groups}
+          memberSince={memberSince}
+          onNewExpense={() => setExpenseModalOpen(true)}
+        />
+      )}
 
       {/* Two column layout */}
       <div className="grid gap-xl lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -422,7 +445,12 @@ export function GroupDetailPage() {
               <p className="mt-xs max-w-[360px] text-md text-text-tertiary">
                 {t("detail.feed.empty.description")}
               </p>
-              <Button intent="primary" className="mt-lg" leftIcon={<PlusIcon />} disabled>
+              <Button
+                intent="primary"
+                className="mt-lg"
+                leftIcon={<PlusIcon />}
+                onClick={() => setExpenseModalOpen(true)}
+              >
                 {t("detail.newExpense")}
               </Button>
             </div>
@@ -487,6 +515,16 @@ export function GroupDetailPage() {
           </div>
         )}
       </div>
+
+      {group && (
+        <NewExpenseModal
+          open={expenseModalOpen}
+          onOpenChange={setExpenseModalOpen}
+          groupId={group.id}
+          groupName={group.name}
+          groupCurrency={group.currency}
+        />
+      )}
     </div>
   );
 }

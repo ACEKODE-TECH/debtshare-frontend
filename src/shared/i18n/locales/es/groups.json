@@ -70,5 +70,77 @@
     "EUR": "Euro (€)",
     "USD": "Dólar (US$)",
     "GBP": "Libra (£)"
+  },
+  "detail": {
+    "breadcrumb": "Todos los grupos",
+    "newExpense": "Añadir gasto",
+    "newExpenseComingSoon": "Disponible en la próxima entrega",
+    "invite": "Invitar",
+    "inviteComingSoon": "Disponible en la próxima entrega",
+    "switcher": {
+      "label": "Grupo",
+      "backToList": "Volver a todos los grupos",
+      "changeAria": "Cambiar de grupo"
+    },
+    "header": {
+      "membersCount_one": "{{count}} miembro",
+      "membersCount_other": "{{count}} miembros",
+      "since": "desde {{date}}",
+      "expensesCount_one": "{{count}} gasto",
+      "expensesCount_other": "{{count}} gastos"
+    },
+    "tabs": {
+      "expenses": "Gastos",
+      "activity": "Actividad",
+      "notes": "Notas"
+    },
+    "filters": {
+      "categoryAria": "Filtrar por categoría",
+      "dateAria": "Filtrar por fecha",
+      "allCategories": "Todas las categorías",
+      "last7d": "Últimos 7 días",
+      "last30d": "Últimos 30 días",
+      "last90d": "Últimos 90 días",
+      "allTime": "Todo el histórico"
+    },
+    "sidePanel": {
+      "balanceTitle": "Tu balance en el grupo",
+      "balanceError": "No hemos podido cargar los balances.",
+      "owedToMe": "a favor",
+      "iOwe": "en deuda",
+      "iOweTo": "Debes a {{name}}",
+      "owesMe": "{{name}} te debe",
+      "viewSimplified": "Ver pagos simplificados",
+      "simplifiedComingSoon": "Disponible en la próxima entrega",
+      "monthlyTitle": "Por categoría",
+      "monthlyLabel": "en gastos recientes"
+    },
+    "notFound": {
+      "title": "Este grupo no existe o ya no eres miembro",
+      "description": "Puede que haya sido eliminado o que hayas salido de él.",
+      "action": "Volver a mis grupos"
+    },
+    "feed": {
+      "title": "Movimientos",
+      "count_one": "{{count}} gasto",
+      "count_other": "{{count}} gastos",
+      "morePending": "Cargando más… (paginación en la próxima entrega)",
+      "youPaid": "Pagaste tú",
+      "userPaid": "Pagó {{name}}",
+      "notInvolved": "No participas",
+      "splitAcross_one": "reparto entre {{count}}",
+      "splitAcross_other": "reparto entre {{count}}",
+      "noResultsForFilter": "Ningún gasto coincide con los filtros actuales.",
+      "clearFilters": "Limpiar filtros",
+      "empty": {
+        "title": "Aún no hay gastos",
+        "description": "Añade el primero cuando alguien pague algo compartido."
+      },
+      "error": {
+        "title": "No hemos podido cargar los gastos",
+        "description": "Comprueba tu conexión y vuelve a intentarlo.",
+        "retry": "Reintentar"
+      }
+    }
   }
 }

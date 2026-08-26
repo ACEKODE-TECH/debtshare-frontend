@@ -17,6 +17,28 @@ export function formatAmount(amount: number, currency: string, options: { withSi
   return `${sign}${formatter.format(abs)} ${symbol}`;
 }
 
+/** Section header for a feed: "Hoy" · "Ayer" · "MIÉRCOLES 3 SEP" · "MARZO 2025" */
+export function formatFeedDateHeader(iso: string, now = new Date()): string {
+  const d = new Date(iso);
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (sameDay(d, now)) return "Hoy";
+  if (sameDay(d, yesterday)) return "Ayer";
+
+  const sameYear = d.getFullYear() === now.getFullYear();
+  if (sameYear) {
+    // "Miércoles · 3 sep"
+    return new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "short" })
+      .format(d)
+      .replace(",", " ·");
+  }
+  return new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" }).format(d);
+}
+
 /** "hace 2 h" · "hace 5 d" · "ayer" · "hoy" · null if no date */
 export function formatRelativeTime(iso: string | null): string | null {
   if (!iso) return null;

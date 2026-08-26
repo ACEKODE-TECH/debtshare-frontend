@@ -96,7 +96,23 @@ function seed(): MockDatabase {
     createdBy: diego.id,
     createdAt: "2025-09-15T08:00:00.000Z",
   });
-  const groups = [viaje, piso];
+  const cena = createGroup({
+    name: "Cena de cumple Lucía",
+    description: "El sábado 15 en La Contraseña",
+    currency: "EUR",
+    icon: "party",
+    createdBy: marta.id,
+    createdAt: "2026-01-10T18:00:00.000Z",
+  });
+  const finde = createGroup({
+    name: "Finde en Asturias",
+    description: "Ruta de sidrerías con Diego e Inés",
+    currency: "EUR",
+    icon: "mountain",
+    createdBy: ines.id,
+    createdAt: "2025-06-20T09:30:00.000Z",
+  });
+  const groups = [viaje, piso, cena, finde];
 
   // -- Group members --------------------------------------------------------
   const groupMembers = [
@@ -104,8 +120,16 @@ function seed(): MockDatabase {
     createGroupMember({ groupId: viaje.id, userId: diego.id, joinedAt: "2025-11-02T09:25:00.000Z" }),
     createGroupMember({ groupId: viaje.id, userId: lucia.id, joinedAt: "2025-11-05T18:41:00.000Z" }),
     createGroupMember({ groupId: piso.id, userId: diego.id, joinedAt: "2025-09-15T08:00:00.000Z" }),
+    createGroupMember({ groupId: piso.id, userId: marta.id, joinedAt: "2025-09-15T08:02:00.000Z" }),
     createGroupMember({ groupId: piso.id, userId: pablo.id, joinedAt: "2025-12-01T11:05:00.000Z" }),
     createGroupMember({ groupId: piso.id, userId: ines.id, joinedAt: "2025-12-01T11:06:00.000Z" }),
+    createGroupMember({ groupId: cena.id, userId: marta.id, joinedAt: "2026-01-10T18:00:00.000Z" }),
+    createGroupMember({ groupId: cena.id, userId: lucia.id, joinedAt: "2026-01-10T18:01:00.000Z" }),
+    createGroupMember({ groupId: cena.id, userId: diego.id, joinedAt: "2026-01-10T18:02:00.000Z" }),
+    createGroupMember({ groupId: cena.id, userId: pablo.id, joinedAt: "2026-01-10T18:03:00.000Z" }),
+    createGroupMember({ groupId: finde.id, userId: ines.id, joinedAt: "2025-06-20T09:30:00.000Z" }),
+    createGroupMember({ groupId: finde.id, userId: marta.id, joinedAt: "2025-06-20T09:32:00.000Z" }),
+    createGroupMember({ groupId: finde.id, userId: diego.id, joinedAt: "2025-06-20T09:33:00.000Z" }),
   ];
 
   // -- Categories -----------------------------------------------------------
@@ -113,7 +137,9 @@ function seed(): MockDatabase {
 
   // -- Expenses + Splits ----------------------------------------------------
   const viajeMembers = [marta.id, diego.id, lucia.id];
-  const pisoMembers = [diego.id, pablo.id, ines.id];
+  const pisoMembers = [diego.id, marta.id, pablo.id, ines.id];
+  const cenaMembers = [marta.id, lucia.id, diego.id, pablo.id];
+  const findeMembers = [ines.id, marta.id, diego.id];
 
   const exp1 = createExpense({
     groupId: viaje.id,
@@ -196,7 +222,61 @@ function seed(): MockDatabase {
     createdAt: "2025-12-05T09:41:00.000Z",
   });
 
-  const expenses = [exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8];
+  // Cena de cumple Lucía — 3 gastos recientes, pequeños, todavía sin liquidar
+  const exp9 = createExpense({
+    groupId: cena.id,
+    description: "Reserva restaurante",
+    amount: 60,
+    categoryId: "cat_leisure",
+    date: "2026-01-14T20:00:00.000Z",
+    paidBy: marta.id,
+    createdBy: marta.id,
+    createdAt: "2026-01-14T20:05:00.000Z",
+  });
+  const exp10 = createExpense({
+    groupId: cena.id,
+    description: "Cena en La Contraseña",
+    amount: 184.4,
+    categoryId: "cat_food",
+    date: "2026-01-15T23:15:00.000Z",
+    paidBy: diego.id,
+    createdBy: diego.id,
+    createdAt: "2026-01-15T23:30:00.000Z",
+  });
+  const exp11 = createExpense({
+    groupId: cena.id,
+    description: "Copas post-cena",
+    amount: 44,
+    categoryId: "cat_leisure",
+    date: "2026-01-16T01:20:00.000Z",
+    paidBy: pablo.id,
+    createdBy: pablo.id,
+    createdAt: "2026-01-16T01:22:00.000Z",
+  });
+
+  // Finde en Asturias — pocos gastos, cerrados con settlements que dejan a todos a 0
+  const exp12 = createExpense({
+    groupId: finde.id,
+    description: "Hotel Cangas 2 noches",
+    amount: 216,
+    categoryId: "cat_housing",
+    date: "2025-06-27T15:00:00.000Z",
+    paidBy: ines.id,
+    createdBy: ines.id,
+    createdAt: "2025-06-27T15:10:00.000Z",
+  });
+  const exp13 = createExpense({
+    groupId: finde.id,
+    description: "Sidrería Casa Amable",
+    amount: 78,
+    categoryId: "cat_food",
+    date: "2025-06-28T22:00:00.000Z",
+    paidBy: diego.id,
+    createdBy: diego.id,
+    createdAt: "2025-06-28T22:20:00.000Z",
+  });
+
+  const expenses = [exp1, exp2, exp3, exp4, exp5, exp6, exp7, exp8, exp9, exp10, exp11, exp12, exp13];
 
   const expenseSplits = [
     ...createEqualSplits(exp1.id, exp1.amount, viajeMembers, exp1.paidBy),
@@ -207,6 +287,11 @@ function seed(): MockDatabase {
     ...createEqualSplits(exp6.id, exp6.amount, pisoMembers, exp6.paidBy),
     ...createEqualSplits(exp7.id, exp7.amount, pisoMembers, exp7.paidBy),
     ...createEqualSplits(exp8.id, exp8.amount, pisoMembers, exp8.paidBy),
+    ...createEqualSplits(exp9.id, exp9.amount, cenaMembers, exp9.paidBy),
+    ...createEqualSplits(exp10.id, exp10.amount, cenaMembers, exp10.paidBy),
+    ...createEqualSplits(exp11.id, exp11.amount, cenaMembers, exp11.paidBy),
+    ...createEqualSplits(exp12.id, exp12.amount, findeMembers, exp12.paidBy),
+    ...createEqualSplits(exp13.id, exp13.amount, findeMembers, exp13.paidBy),
   ];
 
   // -- Receipts -------------------------------------------------------------
@@ -269,7 +354,26 @@ function seed(): MockDatabase {
     settledAt: null,
     createdAt: "2025-12-09T12:00:00.000Z",
   });
-  const settlements = [settlement1, settlement2];
+  // Finde en Asturias: dos pagos que cierran el grupo a cero (todos saldados)
+  const settlement3 = createSettlement({
+    groupId: finde.id,
+    fromUserId: marta.id,
+    toUserId: ines.id,
+    amount: 98,
+    status: "completed",
+    settledAt: "2025-07-05T12:00:00.000Z",
+    createdAt: "2025-07-05T11:55:00.000Z",
+  });
+  const settlement4 = createSettlement({
+    groupId: finde.id,
+    fromUserId: diego.id,
+    toUserId: ines.id,
+    amount: 20,
+    status: "completed",
+    settledAt: "2025-07-05T18:00:00.000Z",
+    createdAt: "2025-07-05T17:58:00.000Z",
+  });
+  const settlements = [settlement1, settlement2, settlement3, settlement4];
 
   // -- Invitations ----------------------------------------------------------
   const inv1 = createGroupInvitation({

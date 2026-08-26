@@ -4,6 +4,7 @@ import { ENDPOINTS } from "@/lib/endpoints";
 import type { Group, GroupMember, GroupSummary } from "@/types";
 
 import { getDb } from "../db";
+import { convertAmount } from "../exchange";
 import { createGroup, createGroupMember } from "../factories";
 import { errorResponse, randomDelayMs, shouldSimulateError } from "../utils";
 
@@ -23,15 +24,24 @@ export const groupHandlers = [
         const groupMembers = db.groupMembers.filter((m) => m.groupId === g.id);
         const memberIds = new Set(groupMembers.map((m) => m.userId));
         const groupExpenses = db.expenses.filter((e) => e.groupId === g.id);
-        const mySplits = db.expenseSplits.filter(
-          (s) => s.userId === myId && groupExpenses.some((e) => e.id === s.expenseId),
-        );
-        const myPaid = groupExpenses.filter((e) => e.paidBy === myId).reduce((a, e) => a + e.amount, 0);
-        const myOwed = mySplits.reduce((a, s) => a + s.amount, 0);
+        // Cross-currency: convert every expense/split into the group currency
+        // before aggregating so summaries always speak the group's language.
+        const gc = g.currency;
+        const expenseById = new Map(groupExpenses.map((e) => [e.id, e]));
+        const mySplits = db.expenseSplits.filter((s) => s.userId === myId && expenseById.has(s.expenseId));
+        const myPaid = groupExpenses
+          .filter((e) => e.paidBy === myId)
+          .reduce((a, e) => a + convertAmount(e.amount, e.currency, gc), 0);
+        const myOwed = mySplits.reduce((a, s) => {
+          const expense = expenseById.get(s.expenseId);
+          if (!expense) return a;
+          return a + convertAmount(s.amount, expense.currency, gc);
+        }, 0);
         const settlements = db.settlements.filter((s) => s.groupId === g.id && s.status === "completed");
         const settlementDelta = settlements.reduce((acc, s) => {
-          if (s.fromUserId === myId) return acc + s.amount;
-          if (s.toUserId === myId) return acc - s.amount;
+          const amt = convertAmount(s.amount, s.currency, gc);
+          if (s.fromUserId === myId) return acc + amt;
+          if (s.toUserId === myId) return acc - amt;
           return acc;
         }, 0);
         const balance = Math.round((myPaid - myOwed + settlementDelta) * 100) / 100;
@@ -72,7 +82,9 @@ export const groupHandlers = [
           ...g,
           memberCount: memberIds.size,
           expenseCount: groupExpenses.length,
-          totalExpenses: Math.round(groupExpenses.reduce((a, e) => a + e.amount, 0) * 100) / 100,
+          totalExpenses:
+            Math.round(groupExpenses.reduce((a, e) => a + convertAmount(e.amount, e.currency, gc), 0) * 100) /
+            100,
           myBalance: balance,
           status,
           lastActivityAt,

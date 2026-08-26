@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink, useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 
 import { useAuthStore } from "@/features/auth/stores/auth-store";
 import { ThemeToggle } from "@/shared/components/ui/ThemeToggle";
@@ -28,8 +28,16 @@ export function Sidebar() {
 
   return (
     <aside className="hidden w-[260px] flex-none flex-col border-r border-border-divider bg-surface-card lg:flex">
-      {/* Logo */}
-      <div className="flex items-center gap-sm-plus px-xl-plus pb-lg pt-xl-plus">
+      {/* Logo — click goes home (groups listing) */}
+      <Link
+        to="/app"
+        aria-label={t("appName")}
+        className={cn(
+          "mx-md mb-lg mt-xl-plus flex items-center gap-sm-plus rounded-lg px-lg py-sm",
+          "transition-colors duration-150 hover:bg-surface-subtle",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-default",
+        )}
+      >
         <div className="flex h-[28px] w-[28px] items-center justify-center rounded-lg bg-brand-default">
           <svg
             width={16}
@@ -48,7 +56,7 @@ export function Sidebar() {
         <span className="text-[17px] font-extrabold tracking-[-0.5px] text-text-primary">
           debt<span className="text-brand-default">share</span>
         </span>
-      </div>
+      </Link>
 
       {/* Search — opens command palette */}
       <div className="px-lg pb-lg pt-md">

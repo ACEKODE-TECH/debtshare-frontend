@@ -3,31 +3,37 @@ import { http, HttpResponse } from "msw";
 import type { Balance, BalanceWithUser, DebtEdge } from "@/types";
 
 import { getDb } from "../db";
+import { convertAmount } from "../exchange";
 import { errorResponse, randomDelayMs, shouldSimulateError } from "../utils";
 
 function computeGroupBalances(groupId: string): Balance[] {
   const db = getDb();
   const group = db.groups.find((g) => g.id === groupId);
+  const gc = group?.currency ?? "EUR";
   const memberIds = db.groupMembers.filter((m) => m.groupId === groupId).map((m) => m.userId);
   const net = new Map<string, number>(memberIds.map((id) => [id, 0]));
 
+  // Everything is normalized to the group currency before entering the ledger.
   for (const expense of db.expenses.filter((e) => e.groupId === groupId)) {
-    net.set(expense.paidBy, (net.get(expense.paidBy) ?? 0) + expense.amount);
+    const paidGc = convertAmount(expense.amount, expense.currency, gc);
+    net.set(expense.paidBy, (net.get(expense.paidBy) ?? 0) + paidGc);
     for (const split of db.expenseSplits.filter((s) => s.expenseId === expense.id)) {
-      net.set(split.userId, (net.get(split.userId) ?? 0) - split.amount);
+      const owedGc = convertAmount(split.amount, expense.currency, gc);
+      net.set(split.userId, (net.get(split.userId) ?? 0) - owedGc);
     }
   }
 
   for (const settlement of db.settlements.filter((s) => s.groupId === groupId && s.status === "completed")) {
-    net.set(settlement.fromUserId, (net.get(settlement.fromUserId) ?? 0) + settlement.amount);
-    net.set(settlement.toUserId, (net.get(settlement.toUserId) ?? 0) - settlement.amount);
+    const amountGc = convertAmount(settlement.amount, settlement.currency, gc);
+    net.set(settlement.fromUserId, (net.get(settlement.fromUserId) ?? 0) + amountGc);
+    net.set(settlement.toUserId, (net.get(settlement.toUserId) ?? 0) - amountGc);
   }
 
   return memberIds.map((userId) => ({
     groupId,
     userId,
     amount: Math.round((net.get(userId) ?? 0) * 100) / 100,
-    currency: group?.currency ?? "EUR",
+    currency: gc,
   }));
 }
 

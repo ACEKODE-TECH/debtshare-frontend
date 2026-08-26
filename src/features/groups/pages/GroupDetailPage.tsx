@@ -465,6 +465,7 @@ export function GroupDetailPage() {
                 expenses={filteredExpenses}
                 currentUserId={currentUserId}
                 categories={categories}
+                groupCurrency={group?.currency ?? "EUR"}
               />
             )}
 

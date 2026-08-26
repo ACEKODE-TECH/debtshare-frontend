@@ -165,6 +165,7 @@ function seed(): MockDatabase {
     groupId: viaje.id,
     description: "Cena en Time Out Market",
     amount: 96.5,
+    currency: "USD",
     categoryId: "cat_food",
     date: "2025-12-04T21:30:00.000Z",
     paidBy: lucia.id,

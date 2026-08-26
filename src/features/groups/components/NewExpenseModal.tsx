@@ -10,6 +10,7 @@ import "react-day-picker/style.css";
 
 import { useAuthStore } from "@/features/auth/stores/auth-store";
 import { useCategories } from "@/shared/api/use-categories";
+import { convertAmount, useExchangeRate } from "@/shared/api/use-exchange-rate";
 import { Avatar, Button, Modal } from "@/shared/components/ui";
 import { ApiError } from "@/shared/lib/api";
 import { cn } from "@/shared/lib/cn";
@@ -38,8 +39,6 @@ function todayISODate(): string {
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
-
-const currencySymbol = (code: CurrencyCode) => ({ EUR: "€", USD: "US$", GBP: "£" })[code];
 
 export function NewExpenseModal({
   open,
@@ -80,6 +79,7 @@ export function NewExpenseModal({
     defaultValues: {
       description: "",
       amount: 0,
+      currency: groupCurrency,
       categoryId: "",
       date: todayISODate(),
       paidBy: "",
@@ -102,6 +102,7 @@ export function NewExpenseModal({
       reset({
         description: "",
         amount: 0,
+        currency: groupCurrency,
         categoryId: "",
         date: todayISODate(),
         paidBy: "",
@@ -109,7 +110,7 @@ export function NewExpenseModal({
       });
       resetMutation();
     }
-  }, [open, reset, resetMutation]);
+  }, [open, reset, resetMutation, groupCurrency]);
 
   const amount = watch("amount");
   const paidBy = watch("paidBy");
@@ -130,7 +131,7 @@ export function NewExpenseModal({
       {
         description: data.description,
         amount: Math.round(Number(data.amount) * 100) / 100,
-        currency: groupCurrency,
+        currency: data.currency,
         categoryId: data.categoryId,
         date: new Date(data.date).toISOString(),
         paidBy: data.paidBy,
@@ -159,7 +160,7 @@ export function NewExpenseModal({
           <div className="mr-auto text-md text-text-muted">
             {t("expense.total")}
             <span className="ml-xs font-extrabold text-text-primary">
-              {formatAmount(Number(amount) || 0, groupCurrency)}
+              {formatAmount(Number(amount) || 0, watch("currency"))}
             </span>
           </div>
           <Button intent="ghost" onClick={() => onOpenChange(false)} disabled={createExpense.isPending}>
@@ -207,41 +208,48 @@ export function NewExpenseModal({
                 <div className="text-xs font-bold uppercase tracking-[0.7px] text-brand-on-subtle">
                   {t("expense.amountLabel")}
                 </div>
-                <label className="mt-xs inline-flex items-baseline gap-xs">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    autoFocus
-                    placeholder="0,00"
-                    // Ancho dinámico: `size` HTML en caracteres. Reserva espacio
-                    // para "0,00" (4) o crece con lo escrito. Sin `width` en CSS
-                    // el navegador respeta `size` con la fuente actual, así que
-                    // "1" ocupa solo su hueco real y queda pegado al €.
-                    size={Math.max((field.value ? String(field.value).replace(".", ",") : "").length, 4)}
-                    value={field.value === 0 ? "" : String(field.value).replace(".", ",")}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(",", ".").replace(/[^\d.]/g, "");
-                      const parts = raw.split(".");
-                      const clean =
-                        parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("").slice(0, 2) : "");
-                      const n = clean === "" || clean === "." ? 0 : Number(clean);
-                      field.onChange(Number.isFinite(n) ? n : 0);
-                    }}
-                    className={cn(
-                      "w-auto max-w-full bg-transparent outline-none",
-                      // Empty: right-aligned so the caret sits away from the "0,00"
-                      // placeholder. Filled: centered so the number reads naturally
-                      // alongside the € symbol.
-                      field.value === 0 ? "text-right" : "text-center",
-                      "text-display-lg font-extrabold tracking-[-2px] leading-none text-text-primary",
-                      "placeholder:text-text-muted caret-brand-default",
-                    )}
-                    aria-label={t("expense.amountLabel")}
-                  />
-                  <span className="text-display-xs font-bold text-brand-on-subtle">
-                    {currencySymbol(groupCurrency)}
-                  </span>
-                </label>
+                <Controller
+                  control={control}
+                  name="currency"
+                  render={({ field: currencyField }) => {
+                    const displayValue = field.value === 0 ? "" : String(field.value).replace(".", ",");
+                    return (
+                      <label className="mt-xs inline-flex items-baseline gap-xs">
+                        {/* Invisible mirror of the currency symbol on the left —
+                            same width as the real symbol on the right, so the
+                            input sits exactly at the center of the card in every
+                            state (empty, filled, EUR/USD/GBP). */}
+                        <span aria-hidden className="pointer-events-none invisible">
+                          <CurrencySymbol value={currencyField.value} onChange={() => {}} />
+                        </span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          autoFocus
+                          placeholder="0,00"
+                          size={Math.max(displayValue.length, 4)}
+                          value={displayValue}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(",", ".").replace(/[^\d.]/g, "");
+                            const parts = raw.split(".");
+                            const clean =
+                              parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("").slice(0, 2) : "");
+                            const n = clean === "" || clean === "." ? 0 : Number(clean);
+                            field.onChange(Number.isFinite(n) ? n : 0);
+                          }}
+                          className={cn(
+                            "w-auto max-w-full bg-transparent text-center outline-none",
+                            "text-display-lg font-extrabold tracking-[-2px] leading-none text-text-primary",
+                            "placeholder:text-text-muted caret-brand-default",
+                          )}
+                          aria-label={t("expense.amountLabel")}
+                        />
+                        <CurrencySymbol value={currencyField.value} onChange={currencyField.onChange} />
+                      </label>
+                    );
+                  }}
+                />
+                <ConversionHint amount={field.value} from={watch("currency")} to={groupCurrency} />
                 {errors.amount && (
                   <p className="mt-xs text-sm-plus font-semibold text-feedback-danger">
                     {errors.amount.message}
@@ -368,7 +376,7 @@ export function NewExpenseModal({
               <div className="text-sm-plus font-bold text-brand-default">
                 {t("expense.perPerson", {
                   count: memberCount,
-                  amount: formatAmount(evenShare, groupCurrency),
+                  amount: formatAmount(evenShare, watch("currency")),
                 })}
               </div>
 
@@ -385,7 +393,7 @@ export function NewExpenseModal({
                       isPayer={isPayer}
                       isMe={m.userId === currentUserId}
                       share={share}
-                      currency={groupCurrency}
+                      currency={watch("currency")}
                       onToggle={() => {
                         if (included) {
                           field.onChange(field.value.filter((id) => id !== m.userId));
@@ -489,9 +497,12 @@ function DateField({
     yesterday.setDate(today.getDate() - 1);
     const isSameDay = (a: Date, b: Date) =>
       a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-    if (isSameDay(d, today)) return `${t("expense.today")} · ${formatShortDate(d, i18n.language)}`;
-    if (isSameDay(d, yesterday)) return `${t("expense.yesterday")} · ${formatShortDate(d, i18n.language)}`;
-    return formatShortDate(d, i18n.language);
+    // Only add the year when the date is not from the current year — keeps
+    // "11 ago" tight when possible but disambiguates "11 ago 1997".
+    const dateStr = formatSmartDate(d, i18n.language, today);
+    if (isSameDay(d, today)) return `${t("expense.today")} · ${dateStr}`;
+    if (isSameDay(d, yesterday)) return `${t("expense.yesterday")} · ${dateStr}`;
+    return dateStr;
   })();
 
   return (
@@ -572,8 +583,13 @@ function DateField({
   );
 }
 
-function formatShortDate(d: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(d);
+function formatSmartDate(d: Date, locale: string, reference: Date): string {
+  const sameYear = d.getFullYear() === reference.getFullYear();
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    ...(sameYear ? {} : { year: "numeric" }),
+  }).format(d);
 }
 
 // Custom caption for react-day-picker: month/year selects styled to match the app,
@@ -884,7 +900,7 @@ function MemberSplitRow({
       onClick={onToggle}
       aria-pressed={included}
       className={cn(
-        "flex items-center gap-sm rounded-xl border px-sm-plus py-sm text-left transition-colors duration-150",
+        "flex items-center gap-xs rounded-xl border px-sm py-sm text-left transition-colors duration-150",
         included
           ? "border-brand-default/30 bg-brand-subtle"
           : "border-dashed border-border-strong bg-transparent hover:border-brand-default/50 hover:bg-surface-hover",
@@ -925,10 +941,10 @@ function MemberSplitRow({
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-xs">
+        <div className="flex items-center gap-2xs">
           <span
             className={cn(
-              "truncate text-md-plus font-bold",
+              "truncate text-md font-bold",
               included ? "text-text-primary" : "text-text-tertiary",
             )}
           >
@@ -937,7 +953,7 @@ function MemberSplitRow({
           {isPayer && (
             <span
               className={cn(
-                "inline-flex items-center rounded-md px-[6px] py-[3px] text-[10px] font-extrabold uppercase leading-none tracking-[0.4px]",
+                "inline-flex flex-none items-center rounded-md px-[5px] py-[2px] text-[9.5px] font-extrabold uppercase leading-none tracking-[0.3px]",
                 included ? "bg-brand-default/15 text-brand-on-subtle" : "bg-surface-hover text-text-tertiary",
               )}
             >
@@ -952,12 +968,113 @@ function MemberSplitRow({
 
       <span
         className={cn(
-          "flex-none whitespace-nowrap text-md-plus font-extrabold tabular-nums",
+          "flex-none whitespace-nowrap text-md font-extrabold tabular-nums",
           included ? "text-text-primary" : "text-text-muted",
         )}
       >
         {included ? formatAmount(share, currency) : "—"}
       </span>
     </button>
+  );
+}
+
+const CURRENCY_OPTIONS: { code: CurrencyCode; label: string }[] = [
+  { code: "EUR", label: "€" },
+  { code: "USD", label: "US$" },
+  { code: "GBP", label: "£" },
+];
+
+function CurrencySymbol({
+  value,
+  onChange,
+}: {
+  value: CurrencyCode;
+  onChange: (value: CurrencyCode) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const current = CURRENCY_OPTIONS.find((c) => c.code === value) ?? CURRENCY_OPTIONS[0];
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button
+          type="button"
+          aria-label={value}
+          className={cn(
+            // Just the symbol — no border, no chevron. Same visual footprint as
+            // the plain "€" span we had before the switcher existed, but clicable.
+            "inline-flex items-baseline rounded-md px-2xs transition-colors",
+            "text-display-xs font-bold text-brand-on-subtle",
+            "hover:text-brand-default hover:bg-brand-subtle-strong/50",
+            "focus:outline-none focus:ring-2 focus:ring-brand-default",
+            open && "bg-brand-subtle-strong",
+          )}
+        >
+          {current.label}
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          sideOffset={6}
+          align="center"
+          collisionPadding={16}
+          className={cn(
+            "z-[70] min-w-[130px] rounded-xl border border-border-strong bg-surface-card p-xs shadow-lg",
+            "data-[state=open]:animate-in data-[state=open]:fade-in-0",
+          )}
+        >
+          {CURRENCY_OPTIONS.map((c) => {
+            const active = c.code === value;
+            return (
+              <button
+                key={c.code}
+                type="button"
+                onClick={() => {
+                  onChange(c.code);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center justify-between gap-sm rounded-lg px-sm-plus py-sm text-left transition-colors duration-100",
+                  active
+                    ? "bg-brand-subtle text-brand-on-subtle"
+                    : "text-text-secondary hover:bg-surface-subtle hover:text-text-primary",
+                )}
+              >
+                <span className={cn("text-md-plus", active ? "font-bold" : "font-semibold")}>{c.code}</span>
+                <span
+                  className={cn(
+                    "text-md-plus font-bold",
+                    active ? "text-brand-on-subtle" : "text-text-muted",
+                  )}
+                >
+                  {c.label}
+                </span>
+              </button>
+            );
+          })}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+function ConversionHint({ amount, from, to }: { amount: number; from: CurrencyCode; to: CurrencyCode }) {
+  const { t } = useTranslation("groups");
+  const { data, isPending } = useExchangeRate(from, to);
+  if (!from || !to || from === to || !amount || amount <= 0) return null;
+  if (isPending || !data) {
+    return (
+      <div className="mt-sm text-sm-plus font-semibold text-brand-on-subtle/70">
+        {t("expense.convertingHint")}
+      </div>
+    );
+  }
+  const converted = convertAmount(amount, data.rate);
+  return (
+    <div className="mt-sm text-sm-plus font-semibold text-brand-on-subtle">
+      ≈ {formatAmount(converted, to)}
+      <span className="ml-xs text-xs font-medium text-brand-on-subtle/70">
+        · {t("expense.simulatedRate")}
+      </span>
+    </div>
   );
 }

@@ -9,6 +9,7 @@ import type { GroupSummary } from "@/types";
 import { useGroups } from "../api/use-groups";
 import { CreateGroupModal } from "../components/CreateGroupModal";
 import { GroupCard } from "../components/GroupCard";
+import { PickGroupForExpenseModal } from "../components/PickGroupForExpenseModal";
 import { formatAmount } from "../lib/format";
 import { useActiveGroupStore } from "../stores/active-group-store";
 
@@ -158,18 +159,23 @@ export function GroupsPage() {
   const setActiveGroup = useActiveGroupStore((s) => s.setActiveGroup);
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
-  // Opens the modal when arriving with `?action=new-group` (fresh or already on the page,
-  // e.g. from the command palette). Consumes the param so a reload doesn't reopen it.
+  // Handles `?action=` params from the command palette (new-group / pick-expense-group).
+  // Consumes the param so a reload doesn't reopen the modal.
   useEffect(() => {
-    if (searchParams.get("action") === "new-group") {
-      const next = new URLSearchParams(searchParams);
-      next.delete("action");
-      setSearchParams(next, { replace: true });
+    const action = searchParams.get("action");
+    if (action !== "new-group" && action !== "pick-expense-group") return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("action");
+    setSearchParams(next, { replace: true });
+    if (action === "new-group") {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- state derived from URL param that we then consume
       setModalOpen(true);
+    } else {
+      setPickerOpen(true);
     }
   }, [searchParams, setSearchParams]);
 
@@ -364,6 +370,10 @@ export function GroupsPage() {
       )}
 
       <CreateGroupModal open={modalOpen} onOpenChange={setModalOpen} onCreated={handleCreated} />
+
+      {groups && groups.length > 0 && (
+        <PickGroupForExpenseModal open={pickerOpen} onOpenChange={setPickerOpen} groups={groups} />
+      )}
     </div>
   );
 }

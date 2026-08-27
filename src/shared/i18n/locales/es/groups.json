@@ -71,10 +71,17 @@
     "USD": "Dólar (US$)",
     "GBP": "Libra (£)"
   },
+  "pickGroup": {
+    "title": "Elige un grupo",
+    "description": "¿A qué grupo quieres añadir este gasto?"
+  },
   "expense": {
     "title": "Nuevo gasto",
     "groupContext": "En {{name}}",
     "amountLabel": "Importe",
+    "convertingHint": "Calculando conversión…",
+    "simulatedRate": "tasa simulada",
+    "convertedShort": "≈ {{amount}}",
     "descriptionLabel": "Descripción",
     "descriptionPlaceholder": "Cena italiana, alquiler, transporte…",
     "categoryLabel": "Categoría",

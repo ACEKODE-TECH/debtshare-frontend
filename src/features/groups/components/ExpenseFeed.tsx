@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import type { Category, ExpenseListItem } from "@/types";
+import type { Category, CurrencyCode, ExpenseListItem } from "@/types";
 
 import { formatFeedDateHeader } from "../lib/format";
 import { ExpenseFeedItem } from "./ExpenseFeedItem";
@@ -9,6 +9,8 @@ export type ExpenseFeedProps = {
   expenses: ExpenseListItem[];
   currentUserId: string | null;
   categories: Category[] | undefined;
+  /** Currency of the group; used to render conversion hints for expenses in a different currency. */
+  groupCurrency: CurrencyCode;
 };
 
 type FeedSection = { key: string; label: string; items: ExpenseListItem[] };
@@ -33,7 +35,7 @@ function groupByDate(expenses: ExpenseListItem[]): FeedSection[] {
   return sections;
 }
 
-export function ExpenseFeed({ expenses, currentUserId, categories }: ExpenseFeedProps) {
+export function ExpenseFeed({ expenses, currentUserId, categories, groupCurrency }: ExpenseFeedProps) {
   const sections = useMemo(() => groupByDate(expenses), [expenses]);
 
   return (
@@ -50,6 +52,7 @@ export function ExpenseFeed({ expenses, currentUserId, categories }: ExpenseFeed
                 expense={expense}
                 currentUserId={currentUserId}
                 categories={categories}
+                groupCurrency={groupCurrency}
               />
             ))}
           </div>

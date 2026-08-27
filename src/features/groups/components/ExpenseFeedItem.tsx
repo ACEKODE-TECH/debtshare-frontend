@@ -1,9 +1,10 @@
 import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
+import { convertAmount, useExchangeRate } from "@/shared/api/use-exchange-rate";
 import { Avatar, AvatarGroup } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/cn";
-import type { Category, ExpenseListItem } from "@/types";
+import type { Category, CurrencyCode, ExpenseListItem } from "@/types";
 
 import { findCategoryName, getCategoryVisual } from "../lib/categories";
 import { formatAmount } from "../lib/format";
@@ -12,14 +13,20 @@ export type ExpenseFeedItemProps = {
   expense: ExpenseListItem;
   currentUserId: string | null;
   categories: Category[] | undefined;
+  groupCurrency: CurrencyCode;
 };
 
-export function ExpenseFeedItem({ expense, currentUserId, categories }: ExpenseFeedItemProps) {
+export function ExpenseFeedItem({ expense, currentUserId, categories, groupCurrency }: ExpenseFeedItemProps) {
   const { groupId } = useParams();
   const { t } = useTranslation("groups");
   const visual = getCategoryVisual(expense.categoryId);
   const categoryName = findCategoryName(expense.categoryId, categories);
   const iPaid = currentUserId != null && expense.paidBy === currentUserId;
+  const needsConversion = expense.currency !== groupCurrency;
+  const { data: rate } = useExchangeRate(
+    needsConversion ? expense.currency : undefined,
+    needsConversion ? groupCurrency : undefined,
+  );
 
   const delta = iPaid ? Math.round((expense.amount - expense.myShare) * 100) / 100 : -expense.myShare;
   const deltaClass =
@@ -90,6 +97,11 @@ export function ExpenseFeedItem({ expense, currentUserId, categories }: ExpenseF
         <div className="text-lg font-extrabold tabular-nums tracking-[-0.3px] text-text-primary">
           {formatAmount(expense.amount, expense.currency)}
         </div>
+        {needsConversion && rate && (
+          <div className="mt-2xs text-[11px] font-medium tabular-nums text-text-muted">
+            ≈ {formatAmount(convertAmount(expense.amount, rate.rate), groupCurrency)}
+          </div>
+        )}
         <div className={cn("mt-2xs text-sm-plus font-bold tabular-nums", deltaClass)}>
           {delta === 0
             ? t("detail.feed.notInvolved")

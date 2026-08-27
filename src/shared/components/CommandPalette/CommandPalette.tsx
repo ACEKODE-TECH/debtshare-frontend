@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { Command } from "cmdk";
 
 import { useGroups } from "@/features/groups/api/use-groups";
@@ -16,12 +16,18 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: groups } = useGroups();
-  const { activeGroupId, setActiveGroup } = useActiveGroupStore();
+  const { setActiveGroup } = useActiveGroupStore();
   const { theme, toggle: toggleTheme } = useThemeStore();
 
-  // Prefer the active group; fall back to the first group we have.
-  const targetGroupId = activeGroupId ?? groups?.[0]?.id ?? null;
+  // Only auto-route the new-expense action into a group when we already have
+  // clear context: the user is inside a group detail page. Otherwise take them
+  // through the picker so it's an explicit choice, not a silent default.
+  const groupDetailMatch = location.pathname.match(/^\/app\/groups\/([^/]+)/);
+  const contextualGroupId = groupDetailMatch?.[1] ?? null;
+  const singleGroupId = groups?.length === 1 ? groups[0].id : null;
+  const newExpenseGroupId = contextualGroupId ?? singleGroupId;
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -127,8 +133,10 @@ export function CommandPalette() {
           <CommandItem
             onSelect={() =>
               runAction(() => {
-                if (targetGroupId) {
-                  navigate(`/app/groups/${targetGroupId}?action=new-expense`);
+                if (newExpenseGroupId) {
+                  navigate(`/app/groups/${newExpenseGroupId}?action=new-expense`);
+                } else if (groups && groups.length > 0) {
+                  navigate("/app/groups?action=pick-expense-group");
                 } else {
                   navigate("/app/groups?action=new-group");
                 }
